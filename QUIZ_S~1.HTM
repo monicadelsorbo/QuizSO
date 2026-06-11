@@ -1,0 +1,2162 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz · Sistemi Operativi v4</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0d1117;
+  --surface: #161b2e;
+  --surface2: #1e2540;
+  --border: #2a3050;
+  --accent: #6366f1;
+  --accent2: #818cf8;
+  --green: #22c55e;
+  --green-dim: rgba(34,197,94,0.12);
+  --green-border: rgba(34,197,94,0.35);
+  --red: #ef4444;
+  --red-dim: rgba(239,68,68,0.12);
+  --red-border: rgba(239,68,68,0.35);
+  --text: #e2e8f0;
+  --muted: #7c87a2;
+  --r: 12px;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 20px 16px 60px;
+}
+
+.container { width: 100%; max-width: 700px; }
+
+/* ── Screens ── */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ── Home ── */
+.home-hero {
+  text-align: center;
+  padding: 56px 0 36px;
+}
+.home-hero h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  background: linear-gradient(130deg, #c7d2fe, #818cf8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.2;
+}
+.home-hero p {
+  color: var(--muted);
+  margin-top: 10px;
+  font-size: 0.9rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin: 28px 0 32px;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 18px 12px;
+  text-align: center;
+}
+.stat-card .snum {
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: var(--accent2);
+  line-height: 1;
+}
+.stat-card .slabel {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.count-ctrl {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.count-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--accent2);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-size: 1.3rem;
+  cursor: pointer;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+.count-btn:hover { background: var(--accent2); border-color: var(--accent2); color: #fff; }
+.stat-card input.snum-input {
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: var(--accent2);
+  line-height: 1;
+  background: transparent;
+  border: none;
+  text-align: center;
+  width: 60px;
+  outline: none;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.stat-card input.snum-input::-webkit-inner-spin-button,
+.stat-card input.snum-input::-webkit-outer-spin-button { display: none; }
+
+.home-actions { display: flex; flex-direction: column; gap: 10px; }
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 24px;
+  border-radius: var(--r);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s ease;
+  width: 100%;
+  letter-spacing: 0.01em;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent2); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(99,102,241,0.35); }
+.btn-secondary {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover { background: var(--surface2); }
+.btn-ghost {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  font-size: 0.88rem;
+  padding: 10px 16px;
+}
+.btn-ghost:hover { background: var(--surface); color: var(--text); }
+.btn:active { transform: scale(0.98); }
+
+/* ── Progress ── */
+.progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+.progress-bar-bg {
+  flex: 1;
+  background: var(--surface);
+  border-radius: 100px;
+  height: 5px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 100px;
+  transition: width 0.4s ease;
+}
+.progress-label { font-size: 0.78rem; color: var(--muted); white-space: nowrap; }
+
+.quiz-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+.live-score { color: var(--green); font-weight: 700; }
+
+/* ── Exit quiz button ── */
+.btn-exit {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 10px;
+  width: 100%;
+  justify-content: center;
+}
+.btn-exit:hover { background: rgba(239,68,68,0.08); color: var(--red); border-color: var(--red-border); }
+
+/* ── Exit confirm inline ── */
+.exit-confirm {
+  background: rgba(239,68,68,0.07);
+  border: 1px solid var(--red-border);
+  border-radius: var(--r);
+  padding: 14px 18px;
+  margin-top: 10px;
+  display: none;
+  animation: fadeUp 0.18s ease both;
+}
+.exit-confirm p {
+  font-size: 0.88rem;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+.exit-confirm-btns { display: flex; gap: 8px; }
+.exit-confirm-btns .btn { font-size: 0.85rem; padding: 10px 16px; }
+.btn-danger { background: var(--red); color: #fff; border: none; }
+.btn-danger:hover { background: #dc2626; transform: translateY(-1px); }
+
+/* ── Question card ── */
+.q-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 26px 24px;
+  margin-bottom: 18px;
+}
+.q-section-tag {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent2);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.q-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.q-text {
+  font-size: 1.05rem;
+  line-height: 1.65;
+  font-weight: 500;
+}
+
+/* ── Answer buttons ── */
+.answer-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.btn-ans {
+  padding: 20px 12px;
+  font-size: 1.15rem;
+  font-weight: 800;
+  border-radius: var(--r);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  letter-spacing: 0.08em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-ans:hover:not(:disabled) { transform: translateY(-2px); }
+.btn-ans:active:not(:disabled) { transform: scale(0.97); }
+.btn-ans:disabled { cursor: default; }
+
+#btn-si {
+  background: var(--green-dim);
+  color: var(--green);
+  border-color: var(--green-border);
+}
+#btn-si:hover:not(:disabled) {
+  background: rgba(34,197,94,0.22);
+  border-color: var(--green);
+  box-shadow: 0 4px 16px rgba(34,197,94,0.2);
+}
+#btn-si.selected {
+  background: rgba(34,197,94,0.22);
+  border-color: var(--green);
+}
+
+#btn-no {
+  background: var(--red-dim);
+  color: var(--red);
+  border-color: var(--red-border);
+}
+#btn-no:hover:not(:disabled) {
+  background: rgba(239,68,68,0.22);
+  border-color: var(--red);
+  box-shadow: 0 4px 16px rgba(239,68,68,0.2);
+}
+#btn-no.selected {
+  background: rgba(239,68,68,0.22);
+  border-color: var(--red);
+}
+
+/* ── Feedback ── */
+.feedback {
+  border-radius: var(--r);
+  padding: 18px 20px;
+  margin-bottom: 16px;
+  animation: fadeUp 0.22s ease both;
+}
+.feedback-correct {
+  background: rgba(34,197,94,0.07);
+  border: 1px solid var(--green-border);
+}
+.feedback-wrong {
+  background: rgba(239,68,68,0.07);
+  border: 1px solid var(--red-border);
+}
+.feedback-verdict {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 6px;
+}
+.feedback-correct .feedback-verdict { color: var(--green); }
+.feedback-wrong .feedback-verdict { color: var(--red); }
+.feedback-correct-ans {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.feedback-correct-ans strong { color: var(--text); }
+.feedback-exp {
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: var(--text);
+}
+.feedback-exp strong { color: var(--muted); font-weight: 600; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Results ── */
+.results-top {
+  text-align: center;
+  padding: 40px 16px 28px;
+}
+.score-ring {
+  width: 116px;
+  height: 116px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 4px solid var(--accent);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 22px;
+  box-shadow: 0 0 30px rgba(99,102,241,0.25);
+}
+.score-ring .big { font-size: 2.3rem; font-weight: 800; color: var(--accent2); line-height: 1; }
+.score-ring .den { font-size: 0.8rem; color: var(--muted); }
+.results-top h2 { font-size: 1.35rem; font-weight: 800; margin-bottom: 6px; }
+.results-top p { color: var(--muted); font-size: 0.9rem; }
+
+.result-pills {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 22px 0 28px;
+}
+.result-pill {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 18px 12px;
+  text-align: center;
+}
+.result-pill .rpnum { font-size: 2rem; font-weight: 800; line-height: 1; }
+.result-pill .rplabel { font-size: 0.72rem; color: var(--muted); margin-top: 5px; text-transform: uppercase; letter-spacing: 0.05em; }
+.pill-ok .rpnum { color: var(--green); }
+.pill-err .rpnum { color: var(--red); }
+
+.results-actions { display: flex; flex-direction: column; gap: 10px; }
+
+/* ── Review ── */
+.review-top {
+  padding: 28px 0 20px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+.review-top h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 4px; }
+.review-top p { color: var(--muted); font-size: 0.88rem; }
+
+.review-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--red);
+  border-radius: var(--r);
+  padding: 22px 20px;
+  margin-bottom: 14px;
+  animation: fadeUp 0.2s ease both;
+}
+.ri-tag {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--red);
+  font-weight: 700;
+  margin-bottom: 10px;
+  display: flex;
+  gap: 10px;
+}
+.ri-section { color: var(--muted); font-weight: 400; }
+.ri-q {
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+.ri-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.badge {
+  padding: 4px 12px;
+  border-radius: 100px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.badge-wrong { background: var(--red-dim); color: var(--red); border: 1px solid var(--red-border); }
+.badge-correct { background: var(--green-dim); color: var(--green); border: 1px solid var(--green-border); }
+.ri-exp {
+  font-size: 0.88rem;
+  line-height: 1.65;
+  color: var(--text);
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.ri-exp strong { color: var(--muted); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+
+.review-footer {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 24px 0 40px;
+}
+.review-footer .btn { width: auto; flex: 1; min-width: 140px; }
+
+/* ── Import Modal ── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  z-index: 200;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+}
+.modal-overlay.open { display: flex; }
+@media (min-width: 500px) {
+  .modal-overlay { align-items: center; padding: 20px; }
+}
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px 16px 0 0;
+  padding: 28px 24px;
+  width: 100%;
+  max-width: 580px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.25s ease both;
+}
+@media (min-width: 500px) { .modal { border-radius: 16px; } }
+@keyframes slideUp {
+  from { transform: translateY(40px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+.modal h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 6px; }
+.modal .modal-desc { font-size: 0.83rem; color: var(--muted); margin-bottom: 14px; line-height: 1.55; }
+.modal code {
+  display: block;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 0.75rem;
+  color: #a5b4fc;
+  margin-bottom: 14px;
+  white-space: pre;
+  overflow-x: auto;
+  line-height: 1.5;
+}
+.modal textarea {
+  width: 100%;
+  height: 160px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 12px;
+  font-size: 0.82rem;
+  font-family: 'Courier New', monospace;
+  resize: vertical;
+  margin-bottom: 12px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.modal textarea:focus { border-color: var(--accent); }
+.modal-footer { display: flex; gap: 10px; justify-content: flex-end; }
+.modal-footer .btn { width: auto; }
+.import-msg {
+  font-size: 0.82rem;
+  padding: 9px 14px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+.import-msg.ok { background: var(--green-dim); color: var(--green); border: 1px solid var(--green-border); }
+.import-msg.err { background: var(--red-dim); color: var(--red); border: 1px solid var(--red-border); }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ════ HOME ════ -->
+  <div id="screen-home" class="screen active">
+    <div class="home-hero">
+      <h1>Quiz Sistemi Operativi</h1>
+      <p>File System · Memoria · I/O · OS161</p>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="snum" id="home-total">176</div>
+        <div class="slabel">domande nel DB</div>
+      </div>
+      <div class="stat-card">
+        <div class="count-ctrl">
+          <button class="count-btn" onclick="adjustCount(-1)">−</button>
+          <input type="number" id="quiz-count" class="snum-input" min="1" max="176" value="15">
+          <button class="count-btn" onclick="adjustCount(1)">+</button>
+        </div>
+        <div class="slabel">domande per quiz</div>
+      </div>
+    </div>
+    <div class="home-actions">
+      <button class="btn btn-primary" onclick="startQuiz()">▶ &nbsp;Inizia Quiz</button>
+      <button class="btn btn-secondary" onclick="openModal()">📥 &nbsp;Aggiorna database domande</button>
+      <button class="btn btn-secondary" onclick="stampaPDF()" style="margin-top:6px;">📄 &nbsp;Stampa / Salva PDF</button>
+    </div>
+  </div>
+
+  <!-- ════ QUIZ ════ -->
+  <div id="screen-quiz" class="screen">
+    <div class="quiz-topbar">
+      <span id="q-counter">Domanda 1 / 15</span>
+      <span class="live-score" id="live-score">✓ 0 corrette</span>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="prog-fill" style="width:0%"></div>
+      </div>
+      <span class="progress-label" id="prog-label">0%</span>
+    </div>
+
+    <div class="q-card">
+      <div class="q-section-tag" id="q-section"></div>
+      <div class="q-label" id="q-label">Domanda</div>
+      <div class="q-text" id="q-text"></div>
+    </div>
+
+    <div class="answer-row">
+      <button class="btn-ans" id="btn-si" onclick="answer('SI')">✅ &nbsp;SÌ</button>
+      <button class="btn-ans" id="btn-no" onclick="answer('NO')">❌ &nbsp;NO</button>
+    </div>
+
+    <div id="feedback-box" style="display:none"></div>
+
+    <button class="btn btn-primary" id="btn-next" onclick="nextQuestion()" style="display:none">
+      Prossima domanda &nbsp;→
+    </button>
+
+    <button class="btn-exit" id="btn-exit" onclick="toggleExitConfirm()">
+      ✕ &nbsp;Termina quiz in anticipo
+    </button>
+
+    <div class="exit-confirm" id="exit-confirm">
+      <p>Vuoi terminare il quiz ora? Vedrai i risultati basati sulle domande già risposte.</p>
+      <div class="exit-confirm-btns">
+        <button class="btn btn-danger" onclick="exitQuiz()">Sì, termina</button>
+        <button class="btn btn-ghost" onclick="toggleExitConfirm()">Annulla</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ RESULTS ════ -->
+  <div id="screen-results" class="screen">
+    <div class="results-top">
+      <div class="score-ring">
+        <div class="big" id="res-score">0</div>
+        <div class="den">/ <span id="res-total">15</span></div>
+      </div>
+      <h2 id="res-title"></h2>
+      <p id="res-sub"></p>
+    </div>
+    <div class="result-pills">
+      <div class="result-pill pill-ok">
+        <div class="rpnum" id="res-ok">0</div>
+        <div class="rplabel">✓ corrette</div>
+      </div>
+      <div class="result-pill pill-err">
+        <div class="rpnum" id="res-err">0</div>
+        <div class="rplabel">✗ sbagliate</div>
+      </div>
+    </div>
+    <div class="results-actions">
+      <button class="btn btn-primary" id="btn-review" onclick="startReview()">🔍 &nbsp;Ripassa gli errori</button>
+      <button class="btn btn-secondary" onclick="startQuiz()">🔄 &nbsp;Nuovo quiz</button>
+      <button class="btn btn-ghost" onclick="goHome()">🏠 &nbsp;Home</button>
+    </div>
+  </div>
+
+  <!-- ════ REVIEW ════ -->
+  <div id="screen-review" class="screen">
+    <div class="review-top">
+      <h2>📖 Ripasso errori</h2>
+      <p id="review-sub"></p>
+    </div>
+    <div id="review-list"></div>
+    <div class="review-footer">
+      <button class="btn btn-primary" onclick="startQuiz()">🔄 &nbsp;Nuovo quiz</button>
+      <button class="btn btn-ghost" onclick="goHome()">🏠 &nbsp;Home</button>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- ════ IMPORT MODAL ════ -->
+<div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
+  <div class="modal">
+    <h3>📥 Aggiorna database domande</h3>
+    <p class="modal-desc">
+      Incolla qui sotto il JSON con le nuove domande. Ogni oggetto deve avere i campi
+      <code style="display:inline;background:none;border:none;padding:0;color:var(--accent2);font-size:inherit">domanda</code>,
+      <code style="display:inline;background:none;border:none;padding:0;color:var(--accent2);font-size:inherit">risposta</code>
+      (SI / NO) e
+      <code style="display:inline;background:none;border:none;padding:0;color:var(--accent2);font-size:inherit">spiegazione</code>.
+      Il campo <code style="display:inline;background:none;border:none;padding:0;color:var(--accent2);font-size:inherit">sezione</code> è opzionale.
+    </p>
+    <code>[
+  {
+    "domanda": "Testo della domanda?",
+    "risposta": "SI",
+    "spiegazione": "Spiegazione della risposta...",
+    "sezione": "Nome della sezione (opzionale)"
+  },
+  { ... }
+]</code>
+    <p class="modal-desc" style="margin-bottom:10px">
+      Le domande saranno attive per questa sessione.
+      Per aggiornare il file in modo permanente, inviami il nuovo PDF e ti darò un HTML aggiornato.
+    </p>
+    <div id="import-msg" style="display:none" class="import-msg"></div>
+    <textarea id="import-ta" placeholder='Incolla qui il JSON array...'></textarea>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" style="width:auto" onclick="closeModal()">Annulla</button>
+      <button class="btn btn-primary" style="width:auto" onclick="importDB()">Carica domande</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════
+//  DATABASE DOMANDE  —  Versione 4.0
+//  Per aggiornare manualmente: modificare questo array.
+//  Per aggiornare via UI: usare il pulsante "Aggiorna database domande".
+// ═══════════════════════════════════════════════════════════════════════
+let DB = [
+
+  // ── Sezione 1: Allocazione del File System ──────────────────────────
+  {
+    sezione: "File System — Allocazione",
+    domanda: "Aumentare la dimensione del blocco su disco (mantenendo fissa la dimensione del puntatore) aumenta la dimensione massima del file?",
+    risposta: "SI",
+    spiegazione: "Blocchi più grandi contengono più puntatori e puntano a blocchi dati di capacità superiore."
+  },
+  {
+    sezione: "File System — Allocazione",
+    domanda: "Con questo schema di allocazione, l'accesso casuale a un blocco può essere effettuato con un numero O(1) di letture di blocchi indice?",
+    risposta: "SI",
+    spiegazione: "L'albero ha profondità fissa, quindi serve un numero costante di letture."
+  },
+  {
+    sezione: "File System — Allocazione",
+    domanda: "Il numero di blocchi indice di secondo livello utilizzati da un file cresce in modo lineare con la dimensione del file?",
+    risposta: "SI",
+    spiegazione: "Più blocchi dati servono, più blocchi di secondo livello vengono allocati proporzionalmente."
+  },
+  {
+    sezione: "File System — Allocazione",
+    domanda: "I blocchi indice soffrono necessariamente di frammentazione interna anche quando il file è un multiplo esatto della dimensione del blocco?",
+    risposta: "SI",
+    spiegazione: "Anche se i dati sono \"perfetti\", il blocco indice potrebbe avere slot di puntamento inutilizzati."
+  },
+
+  // ── Sezione 2: Demand Paging e DMA ──────────────────────────────────
+  {
+    sezione: "Demand Paging e DMA",
+    domanda: "Usando file mappati in memoria, l'accesso a un byte può causare un page fault senza alcuna system call esplicita?",
+    risposta: "SI",
+    spiegazione: "L'hardware intercetta l'accesso a memoria non residente in RAM e avvia l'I/O."
+  },
+  {
+    sezione: "Demand Paging e DMA",
+    domanda: "Durante un trasferimento DMA, le pagine virtuali devono rimanere in memoria fisica?",
+    risposta: "SI",
+    spiegazione: "Il DMA accede alla RAM bypassando la CPU; le pagine vanno bloccate (pinning)."
+  },
+  {
+    sezione: "Demand Paging e DMA",
+    domanda: "Se una pagina usata dal DMA subisse uno swap-out, potrebbe verificarsi corruzione dati?",
+    risposta: "SI",
+    spiegazione: "Il DMA scriverebbe sull'indirizzo fisico in cui si trovava la pagina, corrompendo altri dati."
+  },
+  {
+    sezione: "Demand Paging e DMA",
+    domanda: "La TLB rende inutili gli accessi in memoria per tradurre indirizzi durante operazioni di I/O a blocchi?",
+    risposta: "NO",
+    spiegazione: "I buffer utente per l'I/O vanno tradotti; la TLB riduce, ma non annulla, i lookup in RAM."
+  },
+  {
+    sezione: "Demand Paging e DMA",
+    domanda: "Aumentare la dimensione della pagina riduce i page fault sequenziali, ma aumenta il costo per gli accessi casuali?",
+    risposta: "SI",
+    spiegazione: "Più contiguità avvantaggia la sequenzialità, ma spreca banda in letture mirate/sparse."
+  },
+  {
+    sezione: "Demand Paging e DMA",
+    domanda: "L'uso di read() favorisce l'overlap I/O-calcolo più del memory mapping?",
+    risposta: "NO",
+    spiegazione: "L'overlap dipende dal DMA e dall'I/O a blocchi sottostante, non dall'interfaccia usata."
+  },
+  {
+    sezione: "Demand Paging e DMA",
+    domanda: "Un page fault per un file mappato in memoria blocca il processo anche se l'I/O avviene via DMA?",
+    risposta: "SI",
+    spiegazione: "L'eccezione si risolve bloccando il thread finché il DMA non completa il trasferimento in RAM."
+  },
+
+  // ── Sezione 3: Inverted Page Table (IPT) ────────────────────────────
+  {
+    sezione: "Inverted Page Table (IPT)",
+    domanda: "La IPT riduce lo spazio di indirizzamento dei processi?",
+    risposta: "NO",
+    spiegazione: "Lo spazio di indirizzamento virtuale è indipendente dalla struttura della tabella delle pagine."
+  },
+  {
+    sezione: "Inverted Page Table (IPT)",
+    domanda: "Se lo spazio di indirizzamento di un processo è uguale alla metà della RAM, la sua Page Table (PT) standard è generalmente più piccola della IPT globale?",
+    risposta: "SI",
+    spiegazione: "La IPT mappa ogni singolo frame della RAM. Se lo spazio virtuale è solo metà della RAM, la PT standard avrà meno entry della IPT, e solitamente una entry standard è più piccola di una entry IPT."
+  },
+  {
+    sezione: "Inverted Page Table (IPT)",
+    domanda: "Se lo spazio di un processo eguaglia la RAM disponibile, la PT del processo e la IPT possono avere lo stesso numero di entry?",
+    risposta: "SI",
+    spiegazione: "Il numero di entry virtuali combacerebbe con quello dei frame fisici (presumendo che le entry abbiano la stessa dimensione in byte, anche se non è sempre vero)."
+  },
+  {
+    sezione: "Inverted Page Table (IPT)",
+    domanda: "Con più processi attivi, una IPT è sempre migliore perché lo spazio di indirizzamento di un singolo processo è grande almeno quanto la RAM?",
+    risposta: "NO",
+    spiegazione: "L'assunzione è falsa. Lo spazio di indirizzamento (effettivamente in uso) di un processo può essere infinitamente più piccolo della grandezza della RAM totale."
+  },
+  {
+    sezione: "Inverted Page Table (IPT)",
+    domanda: "Se si combina la IPT con una tabella Hash, la dimensione raddoppia perché le entry vengono replicate?",
+    risposta: "NO",
+    spiegazione: "Le entry della IPT non vengono copiate interamente nell'Hash. L'Hash table memorizza tipicamente solo i puntatori/indici diretti alla vera IPT."
+  },
+  {
+    sezione: "Inverted Page Table (IPT)",
+    domanda: "La tabella Hash migliora il tempo di ricerca perché il numero di pagina virtuale (VPN) funge da indice diretto nell'array?",
+    risposta: "NO",
+    spiegazione: "Il VPN non è usato come indice diretto (come in una PT), ma viene usato come chiave (dato in pasto a una funzione matematica di hashing) per trovare l'indice."
+  },
+
+  // ── Sezione 4: Disk Scheduling e Memorie ────────────────────────────
+  {
+    sezione: "Disk Scheduling e Memorie",
+    domanda: "L'algoritmo C-SCAN ottimizza il tempo di posizionamento per gli HDD minimizzando la latenza rotazionale?",
+    risposta: "NO",
+    spiegazione: "Gli algoritmi di testina come C-SCAN o SSTF minimizzano il tempo di ricerca (Seek Time) meccanico del braccio, non la latenza di rotazione dei piattelli."
+  },
+  {
+    sezione: "Disk Scheduling e Memorie",
+    domanda: "A parità di richieste, la distanza percorsa in totale dalla testina in C-SCAN è generalmente superiore a quella in SCAN?",
+    risposta: "SI",
+    spiegazione: "Nel C-SCAN il braccio serve le richieste solo in un verso, dopodiché torna all'inizio del disco a vuoto, aumentando di fatto la distanza totale fisica percorsa (ma migliorando l'equità d'attesa)."
+  },
+  {
+    sezione: "Disk Scheduling e Memorie",
+    domanda: "I dischi a stato solido NVM (Non-Volatile Memory) non richiedono gli stessi algoritmi di scheduling degli HDD?",
+    risposta: "SI",
+    spiegazione: "Non avendo testine o parti meccaniche in movimento, negli SSD non esiste alcun overhead di Seek o posizionamento da ottimizzare in questo modo."
+  },
+  {
+    sezione: "Disk Scheduling e Memorie",
+    domanda: "Data una coda con N richieste, non è possibile accettare nuove richieste mentre un algoritmo SSTF sta servendo quelle attuali?",
+    risposta: "NO",
+    spiegazione: "Lo scheduling è completamente dinamico. Se arriva una nuova richiesta, viene accodata ed entra in competizione immediata con le altre per essere la più vicina alla testina."
+  },
+
+  // ── Sezione 5: Ricerca Binaria e Strutture del File System ──────────
+  {
+    sezione: "Ricerca Binaria e File System",
+    domanda: "Un algoritmo di ricerca binaria su file garantirà sempre un costo logaritmico O(logN) indipendentemente dal File System (FAT, Liste, Inode) perché operano su livelli software differenti?",
+    risposta: "NO",
+    spiegazione: "L'indipendenza software è vera, ma la ricerca binaria richiede un accesso diretto in O(1) all'elemento desiderato per poter scartare metà dati; requisito non soddisfatto dalle liste concatenate."
+  },
+  {
+    sezione: "Ricerca Binaria e File System",
+    domanda: "L'allocazione contigua garantisce un costo logaritmico per la ricerca binaria poiché supporta l'accesso diretto in O(1)?",
+    risposta: "SI",
+    spiegazione: "Sapendo dove inizia il file su disco, si calcola immediatamente la posizione fisica del blocco centrale."
+  },
+  {
+    sezione: "Ricerca Binaria e File System",
+    domanda: "FAT e Liste non supportano l'accesso in O(1), quindi la ricerca binaria collassa a O(N logN), rendendo di fatto la banale ricerca sequenziale un'opzione migliore come complessità?",
+    risposta: "SI",
+    spiegazione: "Saltare al blocco centrale in una lista o nella FAT richiede di scorrere tutti i puntatori precedenti. La ricerca lineare O(N) diventa paradossalmente più veloce su questi file system rispetto a una binaria penalizzata dai salti continui."
+  },
+  {
+    sezione: "Ricerca Binaria e File System",
+    domanda: "Gli Inode non supportano l'accesso casuale/diretto, quindi non garantiscono la ricerca binaria in modo logaritmico?",
+    risposta: "NO",
+    spiegazione: "Falso: le tabelle di Inode supportano l'accesso casuale indicizzato ai blocchi di un file, quindi la ricerca dicotomica può funzionare con alte performance."
+  },
+  {
+    sezione: "Ricerca Binaria e File System",
+    domanda: "Sebbene la FAT supporti solo l'accesso sequenziale logico, può essere molto più rapida delle normali liste concatenate quando si applica la ricerca binaria?",
+    risposta: "SI",
+    spiegazione: "La FAT si trova interamente in memoria RAM. L'accesso sequenziale per rintracciare il N-esimo blocco si compie velocemente scansionando un array in RAM, senza i lentissimi accessi al disco richiesti dalle linked list pure."
+  },
+
+  // ── Sezione 6: OS161 Memoria Virtuale (as_copy) ─────────────────────
+  {
+    sezione: "OS161 — as_copy",
+    domanda: "In as_copy, la funzione sta fisicamente allocando la RAM quando invoca as_prepare_load()?",
+    risposta: "SI",
+    spiegazione: "In DUMBVM, as_prepare_load esegue l'effettiva allocazione (e calcolo degli indirizzi fisici base) una volta note le dimensioni dei segmenti."
+  },
+  {
+    sezione: "OS161 — as_copy",
+    domanda: "La trasformazione da indirizzo fisico a logico tramite PADDR_TO_KVADDR(new->as_pbase1) poteva essere evitata usando semplicemente l'indirizzo new->as_vbase1?",
+    risposta: "NO",
+    spiegazione: "La macro converte la RAM in un indirizzo logico del Kernel (kseg0), accessibile privilegiatamente per la copia (memmove). Il vbase1 è un indirizzo logico Utente, al quale il kernel non deve appoggiarsi in queste fasi interne."
+  },
+  {
+    sezione: "OS161 — as_copy",
+    domanda: "Se la system call fork() viene implementata con as_copy, la tecnica copy-on-write non può essere supportata dal sistema?",
+    risposta: "SI",
+    spiegazione: "Il Copy-on-Write richiede che padre e figlio condividano gli stessi frame fisici. Questa as_copy alloca immediatamente RAM vergine e copia brutalmente i byte (memmove), negando la logica del COW."
+  },
+  {
+    sezione: "OS161 — as_copy",
+    domanda: "Lo spazio di indirizzamento generato (puntato da new) è una struttura dati utente, vista dal processo quando esegue in user mode?",
+    risposta: "NO",
+    spiegazione: "struct addrspace è esclusivamente una struttura dati del Kernel necessaria per la gestione della memoria, che è un compito puramente privilegiato."
+  },
+  {
+    sezione: "OS161 — as_copy",
+    domanda: "Dati new->as_pbase1 = 0x200000, il risultato esatto di PADDR_TO_KVADDR(new->as_pbase1) è 0x80200000?",
+    risposta: "SI",
+    spiegazione: "Nel MIPS, per mappare in kseg0 (usato dal kernel), si somma l'offset base 0x80000000 all'indirizzo fisico: 0x200000 + 0x80000000 = 0x80200000."
+  },
+  {
+    sezione: "OS161 — as_copy",
+    domanda: "Data la base fisica 0x200000 mappata a quella virtuale 0x400000, l'indirizzo fisico corrispondente per l'indirizzo logico utente 0x4000AB è 0x2000AB?",
+    risposta: "SI",
+    spiegazione: "L'offset all'interno del segmento si conserva intatto (0x00AB). Si somma l'offset alla base fisica corrispondente: 0x200000 + 0x00AB = 0x2000AB."
+  },
+  {
+    sezione: "OS161 — as_copy",
+    domanda: "L'indirizzo logico del Kernel per l'indirizzo fisico 0x303000 è 0x80303000?",
+    risposta: "SI",
+    spiegazione: "Stessa regola della MIPS Memory Map: si somma il tetto di kseg0 (0x80000000) all'indirizzo fisico: 0x303000 + 0x80000000 = 0x80303000."
+  },
+
+  // ── Sezione 7: OS161 Processi Utente e System Calls ─────────────────
+  {
+    sezione: "OS161 — Processi e System Calls",
+    domanda: "Lo switchframe di un processo si trova nel suo kernel stack ed è allocato dinamicamente usando kmalloc?",
+    risposta: "NO",
+    spiegazione: "Si trova nel kernel stack, ma non è allocato con kmalloc (che alloca nell'Heap). Lo switchframe è un pacchetto temporaneo spinto (pushed) sullo stack dalla sottrazione dello stack pointer."
+  },
+  {
+    sezione: "OS161 — Processi e System Calls",
+    domanda: "La funzione switchframe_switch è in assembly: effettua il context switch salvando i registri di un thread e ripristinando quelli del thread entrante?",
+    risposta: "SI",
+    spiegazione: "È l'unica operazione di così basso livello (accesso diretto ai registri general purpose e pointer) da richiedere l'Assembly (file switch.S)."
+  },
+  {
+    sezione: "OS161 — Processi e System Calls",
+    domanda: "Lo stack utente di un processo NON fa parte del suo spazio di indirizzamento, che è limitato ai soli segmenti Text (codice) e Data?",
+    risposta: "NO",
+    spiegazione: "Lo spazio virtuale di un processo (Addrspace) comprende categoricamente anche la base fisica dello stack utente, essenziale per la sua esecuzione."
+  },
+  {
+    sezione: "OS161 — Processi e System Calls",
+    domanda: "In DUMBVM, lo stack utente di un processo ha una dimensione fissa predefinita di 18 pagine?",
+    risposta: "SI",
+    spiegazione: "A differenza dei segmenti dati/codice che variano con l'ELF caricato, lo stack ha sempre una grandezza fissa (il numero esatto dipende dalla macro DUMBVM_STACKPAGES, spesso impostata a 12 o 18 a seconda del build)."
+  },
+  {
+    sezione: "OS161 — Processi e System Calls",
+    domanda: "La funzione enter_new_process si usa per avviare un processo utente creando un trapframe e simulando il ritorno da un'eccezione (RFE)?",
+    risposta: "SI",
+    spiegazione: "Per declassare i privilegi da Kernel a User Space, il sistema prepara un frame finto e lancia l'RFE (Return From Exception), \"ingannando\" la CPU e facendole avviare il processo."
+  },
+  {
+    sezione: "OS161 — Processi e System Calls",
+    domanda: "La enter_new_process attende inoltre la terminazione del processo utente e ne restituisce il suo Exit Status?",
+    risposta: "NO",
+    spiegazione: "Il Ritorno da Eccezione salta direttamente al codice utente abbassando i privilegi. Questa funzione non ritorna mai più indietro (\"Warp to user mode\"). Il ciclo di vita viene poi gestito altrove."
+  },
+  {
+    sezione: "OS161 — Processi e System Calls",
+    domanda: "Quando un programma utente chiama read(fd, buf, nb), buf funge da sorgente e fd da destinazione dei dati?",
+    risposta: "NO",
+    spiegazione: "È il contrario: leggiamo i dati dal File Descriptor sorgente (fd), e li depositiamo nel buffer destinazione allocato dall'utente (buf)."
+  },
+  {
+    sezione: "OS161 — Processi e System Calls",
+    domanda: "Nel caso kernel buffering sia abilitato, il parametro buf passato in read può essere tranquillamente un indirizzo di un buffer del Kernel?",
+    risposta: "NO",
+    spiegazione: "Poiché la funzione viene chiamata da un programma utente, buf deve risiedere nello User Space. I trasferimenti kernel-user necessitano di routine controllate (es. copyout)."
+  },
+  {
+    sezione: "OS161 — Processi e System Calls",
+    domanda: "Il gestore System Call in OS161 riceve tutto il necessario all'interno del Trapframe, richiedendo quindi un singolo parametro?",
+    risposta: "SI",
+    spiegazione: "La funzione kernel syscall(struct trapframe *tf) riceve tutto il contesto salvato (registri, codice operazione, argomenti utente) estraendolo direttamente dal trapframe in ingresso."
+  },
+  {
+    sezione: "OS161 — Processi e System Calls",
+    domanda: "Terminata la syscall, il kernel sveglia il processo in attesa lanciando una Signal/V sul semaforo su cui l'utente stava dormendo?",
+    risposta: "NO",
+    spiegazione: "La system call è un'eccezione hardware: per restituire il controllo al chiamante si utilizza semplicemente la sequenza in assembly di ripristino registri e Return From Exception (RFE), non esistono semafori coinvolti nel rientro utente."
+  },
+
+  // ── Sezione 8: Demand Paging, DMA e Memory Mapping (versione estesa) ─
+  {
+    sezione: "Demand Paging, DMA e Memory Mapping",
+    domanda: "Usando file mappati in memoria (memory-mapped files), l'accesso a un byte del file può causare un page fault anche se non viene eseguita alcuna system call di I/O in modo esplicito?",
+    risposta: "SI",
+    spiegazione: "La mappatura in memoria mappa direttamente il file nello spazio di indirizzamento virtuale del processo. Il caricamento avviene in modalità \"lazy\" (pigra) tramite il meccanismo hardware della MMU: l'accesso diretto a un puntatore C in memoria scatena automaticamente un page fault se la pagina non è ancora presente in RAM fisica, delegando al kernel la lettura trasparente da disco senza invocare `read()` o `write()`."
+  },
+  {
+    sezione: "Demand Paging, DMA e Memory Mapping",
+    domanda: "Durante un trasferimento DMA verso un buffer utente, le corrispondenti pagine virtuali devono rimanere residenti in memoria fisica per tutta la durata del trasferimento?",
+    risposta: "SI",
+    spiegazione: "Il controller DMA opera in totale autonomia rispetto alla CPU lavorando direttamente sugli indirizzi fisici della RAM. Se le pagine virtuali corrispondenti non venissero bloccate (pinning) in memoria, il sistema operativo potrebbe eseguirne lo swap-out o riallocare quei frame fisici, inducendo il DMA a sovrascrivere o corrompere memoria estranea."
+  },
+  {
+    sezione: "Demand Paging, DMA e Memory Mapping",
+    domanda: "Se una pagina coinvolta in un trasferimento DMA in corso venisse spostata su disco (swap-out), potrebbe verificarsi corruzione dei dati?",
+    risposta: "SI",
+    spiegazione: "Se la pagina subisse uno swap-out, il frame fisico verrebbe liberato per altre allocazioni del kernel. Poiché il DMA ignora la tabella delle pagine e prosegue la sua operazione sull'indirizzo fisico inizialmente configurato, finirebbe per scrivere sopra i dati del nuovo blocco allocato in quel frame, corrompendolo."
+  },
+  {
+    sezione: "Demand Paging, DMA e Memory Mapping",
+    domanda: "La presenza di una TLB garantisce che non siano necessari ulteriori accessi in memoria per tradurre indirizzi virtuali durante operazioni di I/O a blocchi?",
+    risposta: "NO",
+    spiegazione: "Sebbene la TLB non influisca sulle porte hardware o sugli indirizzi dei dispositivi di I/O (che spesso sono memory-mapped non paginati, come `kseg1` su MIPS), gli indirizzi di memoria sorgente o destinazione dell'I/O a blocchi si trovano nello spazio virtuale utente (`kuseg`). Essi sono pertanto soggetti a traduzione logico-fisica: la TLB ne riduce drasticamente gli accessi medi alle tabelle delle pagine in RAM, ma in caso di TLB miss non li annulla."
+  },
+  {
+    sezione: "Demand Paging, DMA e Memory Mapping",
+    domanda: "Aumentare la dimensione della pagina può ridurre il numero di page fault causati da accessi sequenziali a file, ma può aumentare il costo di accessi casuali (random) al file?",
+    risposta: "SI",
+    spiegazione: "Pagine più grandi sfruttano appieno il principio della località spaziale: un singolo page fault carica un grosso frammento di file contiguo, azzerando i fault per i byte successivi letti sequenzialmente. Negli accessi casuali sparsi, invece, caricare un'intera pagina enorme per estrarre un singolo byte isolato comporta un enorme spreco di banda del disco e di spazio in RAM fisica."
+  },
+  {
+    sezione: "Demand Paging, DMA e Memory Mapping",
+    domanda: "Quando un file viene letto sequenzialmente usando read(), il kernel può sovrapporre (overlap) I/O e calcolo più facilmente rispetto al caso in cui il file sia acceduto tramite memory mapping del file?",
+    risposta: "NO",
+    spiegazione: "Le due modalità operano su piani architetturali differenti. La sovrapposizione di calcolo (CPU) e trasferimento dati (I/O) asincrono è resa possibile a basso livello grazie alla presenza del controller DMA indipendente e all'organizzazione dell'I/O a blocchi del kernel, non dall'interfaccia o dalle funzioni software usate dall'applicazione."
+  },
+  {
+    sezione: "Demand Paging, DMA e Memory Mapping",
+    domanda: "Un page fault causato dall'accesso a un file mappato in memoria può bloccare il processo chiamante anche se l'I/O su disco necessario a soddisfare il fault viene effettuato tramite DMA?",
+    risposta: "SI",
+    spiegazione: "Il controller DMA gestisce unicamente gli indirizzi fisici una volta avviato il trasferimento. Il Page Fault (un'eccezione hardware della MMU) deve essere intercettato e risolto dal kernel prima di poter istruire il DMA sul frame fisico di destinazione. Durante il tempo in cui il blocco del file viene letto dal disco, il processo che ha scatenato l'eccezione viene sospeso (messo in stato di attesa/sleep) per non sprecare CPU, lasciando spazio ad altri thread."
+  },
+
+  // ── Sezione 9: OS161 — Compilazione Condizionata (versione estesa) ──
+  {
+    sezione: "OS161 — Compilazione Condizionata",
+    domanda: "L'esecuzione (in kern/conf) di ./config PROJECT, seguita dal comando bmake depend (eseguito in kern/compile/PROJECT), è sufficiente affinché il file opzionale syscall/project.c sia compilato quando si esegue bmake?",
+    risposta: "SI",
+    spiegazione: "Il comando `./config` analizza le opzioni e predispone i file di configurazione con l'albero dei Makefile condizionati, mentre `bmake depend` mappa ed elenca le dipendenze degli header. Questa catena garantisce che il successivo comando `bmake` includa e compili correttamente il sorgente `syscall/project.c`."
+  },
+  {
+    sezione: "OS161 — Compilazione Condizionata",
+    domanda: "Il file project.h viene generato automaticamente dal comando ./config PROJECT?",
+    risposta: "NO",
+    spiegazione: "Il comando `./config` si occupa esclusivamente di generare gli header di configurazione automatica legati alle direttive di compilazione condizionale, i quali assumono obbligatoriamente il prefisso `opt-` (es. `opt-project.h`). Gli header classici di prototipazione (come `project.h`) devono essere scritti a mano dal programmatore."
+  },
+  {
+    sezione: "OS161 — Compilazione Condizionata",
+    domanda: "Il file opt-project.h viene generato solo se l'istruzione options project compare nel file PROJECT?",
+    risposta: "NO",
+    spiegazione: "Il file header `opt-project.h` viene generato sempre e in ogni caso dall'utility di configurazione per evitare errori di compilazione nel codice sorgente. La presenza o l'assenza della direttiva `options project` nel file di configurazione del kernel serve solo a modificare il valore associato alla macro (impostandolo a `1` se abilitato o a `0` se disabilitato)."
+  },
+  {
+    sezione: "OS161 — Compilazione Condizionata",
+    domanda: "Il file opt-project.h contiene la definizione #define opt_project?",
+    risposta: "NO",
+    spiegazione: "Il file generato in automatico contiene la definizione della macro di controllo scritta rigorosamente in lettere maiuscole, legandosi al nome dell'opzione definita. Conterrà quindi una riga del tipo `#define OPT_PROJECT 1` (o `0`), e non la dicitura in minuscolo."
+  },
+  {
+    sezione: "OS161 — Compilazione Condizionata",
+    domanda: "Se si desidera inserire in main.c l'istruzione project_init() (funzione definita in syscall/project.c), l'intestazione del file main.c deve includere \"opt-project.h\"?",
+    risposta: "SI",
+    spiegazione: "Affinché il preprocessore C possa riconoscere e valutare la macro di controllo condizionale `OPT_PROJECT` all'interno di `main.c`, è indispensabile includere esplicitamente in cima al file l'header di configurazione autogenerato `opt-project.h`."
+  },
+  {
+    sezione: "OS161 — Compilazione Condizionata",
+    domanda: "Per fare in modo che project_init() sia considerata solo se l'opzione project è abilitata, andranno condizionate le istruzioni in main.c tramite le direttive #ifdef OPT_PROJECT e #endif?",
+    risposta: "NO",
+    spiegazione: "Non si può usare la direttiva `#ifdef` (if defined) perché la macro `OPT_PROJECT` viene definita in entrambi i casi all'interno del file generato. Se l'opzione fosse disattivata, il file conterrebbe comunque `#define OPT_PROJECT 0`: l'utilizzo di `#ifdef` risulterebbe vero, includendo erroneamente l'istruzione anche quando l'opzione è spenta."
+  },
+  {
+    sezione: "OS161 — Compilazione Condizionata",
+    domanda: "Per condizionare correttamente project_init() in main.c in base alla reale abilitazione dell'opzione, andranno usate le direttive #if OPT_PROJECT e #endif?",
+    risposta: "SI",
+    spiegazione: "La direttiva corretta è `#if OPT_PROJECT`, in quanto valuta il valore logico-numerico associato alla macro. Se l'opzione è abilitata, la macro vale `1` (condizione vera, il codice viene compilato); se disabilitata vale `0` (condizione falsa, il blocco viene rimosso dal preprocessore)."
+  },
+
+  // ── Sezione 10: OS161 — sys_getpid ──────────────────────────────────
+  {
+    sezione: "OS161 — sys_getpid",
+    domanda: "La funzione di kernel sys_getpid() è necessaria per implementare la sys_waitpid(), in quanto serve conoscere il pid del processo in attesa?",
+    risposta: "NO",
+    spiegazione: "La chiamata di sistema `sys_waitpid()` riceve già l'identificativo del processo bersaglio (il PID da attendere) direttamente come parametro d'ingresso esplicito. Di conseguenza, non ha alcun bisogno di interrogare internamente la `sys_getpid()`."
+  },
+  {
+    sezione: "OS161 — sys_getpid",
+    domanda: "La funzione sys_getpid() è necessaria per implementare la chiamata di sistema getpid e verrà chiamata direttamente da un processo utente?",
+    risposta: "NO",
+    spiegazione: "La prima parte dell'affermazione è corretta (la funzione implementa la logica della syscall), ma la seconda parte è falsa. Essendo una routine interna del kernel che lavora in modalità privilegiata, non può mai essere invocata direttamente dal codice utente (User Space). L'applicazione deve usare un'istruzione speciale hardware (trap) per fare lo switch di contesto."
+  },
+  {
+    sezione: "OS161 — sys_getpid",
+    domanda: "La funzione sys_getpid() è necessaria per implementare la chiamata di sistema getpid, e sarà chiamata dal kernel all'interno della funzione globale syscall()?",
+    risposta: "SI",
+    spiegazione: "Questo rispecchia l'architettura esatta delle system call: l'applicazione utente solleva un'eccezione software tramite la libreria, il controllo passa alla routine di gestione globale delle trap del kernel (`syscall()`), la quale decodifica il codice numerico della richiesta e invoca la funzione protetta `sys_getpid()`."
+  },
+  {
+    sezione: "OS161 — sys_getpid",
+    domanda: "La funzione sys_getpid() restituisce il pid del processo corrente?",
+    risposta: "SI",
+    spiegazione: "Lo scopo unico ed esclusivo della chiamata è quello di esaminare il thread attualmente attivo sulla CPU e restituire l'identificativo numerico del processo a cui appartiene (`curthread->t_proc->p_pid`)."
+  },
+  {
+    sezione: "OS161 — sys_getpid",
+    domanda: "La funzione sys_getpid() viene chiamata per ottenere il pid di un altro processo (quello di cui attendere la terminazione)?",
+    risposta: "NO",
+    spiegazione: "La funzione restituisce unicamente ed inflessibilmente il PID del chiamante stesso. Non offre alcuna interfaccia per interrogare o scoprire i codici PID di processi terzi o figli all'interno del sistema."
+  },
+  {
+    sezione: "OS161 — sys_getpid",
+    domanda: "La funzione sys_getpid() viene chiamata dalla sys__exit, in modo da conoscere il pid del processo a cui inviare una segnalazione?",
+    risposta: "NO",
+    spiegazione: "Durante la fase di terminazione forzata o volontaria (`sys__exit`), il kernel ha già pieno accesso alle strutture dati del thread corrente. Gestisce le notifiche ai processi padri o la rimozione dei descrittori attingendo direttamente al PCB corrente, senza dover richiamare la funzione `sys_getpid()`."
+  },
+
+  // ── Sezione 11: OS161 — Spinlock ────────────────────────────────────
+  {
+    sezione: "OS161 — Spinlock",
+    domanda: "Per implementare le funzioni OS161 spinlock_data_get e spinlock_data_testandset è necessario utilizzare dei semafori al fine di risolvere problemi di mutua esclusione?",
+    risposta: "NO",
+    spiegazione: "Queste funzioni operano al livello più intimo e basso dell'hardware dell'architettura del processore. Gestiscono la mutua esclusione tramite istruzioni atomiche assembly o agendo direttamente sulla maschera degli interrupt della CPU. I semafori, al contrario, sono costrutti ad alto livello implementati dal kernel sfruttando gli spinlock per proteggere le proprie code di attesa."
+  },
+  {
+    sezione: "OS161 — Spinlock",
+    domanda: "Le funzioni spinlock_data_get e spinlock_data_testandset al loro interno chiamano spinlock_acquire e spinlock_release?",
+    risposta: "NO",
+    spiegazione: "La relazione di dipendenza è invertita. Queste funzioni atomiche di basso livello costituiscono i mattoni fondamentali utilizzati internamente per poter realizzare la logica di blocco e di attesa ciclica della funzione `spinlock_acquire()`. Se invocassero a loro volta la `spinlock_acquire()`, causerebbero una ricorsione infinita immediata."
+  },
+  {
+    sezione: "OS161 — Spinlock",
+    domanda: "Le funzioni spinlock_data_get e spinlock_data_testandset sono utilizzate per realizzare l'algoritmo di spinlock_acquire?",
+    risposta: "SI",
+    spiegazione: "Esatto. La funzione `spinlock_acquire()` si basa su un ciclo di attesa attiva (busy-wait loop) che interroga continuamente lo stato del bit di lock tramite la primitiva atomica hardware di test-and-set, bloccando l'avanzamento finché la risorsa non viene rilasciata."
+  },
+  {
+    sezione: "OS161 — Spinlock",
+    domanda: "La funzione spinlock_release non chiama la spinlock_data_testandset ma la spinlock_set (o un'istruzione di assegnamento/clear diretto), perché non deve gestire una mutua esclusione durante il rilascio?",
+    risposta: "SI",
+    spiegazione: "Poiché la CPU corrente possiede già in modo esclusivo lo spinlock, l'operazione di rilascio non deve competere con nessun altro core del processore. Di conseguenza, non serve eseguire un'operazione condizionale complessa come il test-and-set, ma basta effettuare una scrittura diretta atomica (un'istruzione di azzeramento/clear) per ripristinare lo stato libero del lock."
+  },
+
+  // ── Sezione 12: IPT — Risparmio di Memoria ───────────────────────────
+  {
+    sezione: "IPT — Risparmio di Memoria",
+    domanda: "Rispetto a una PT standard, una IPT permette di risparmiare memoria sempre, indipendentemente dal numero di processi e dalla loro dimensione?",
+    risposta: "NO",
+    spiegazione: "Non si risparmia nel caso di pochi processi con spazio di indirizzamento piccolo: la somma delle loro PT potrebbe essere inferiore alla IPT globale."
+  },
+  {
+    sezione: "IPT — Risparmio di Memoria",
+    domanda: "Il risparmio di memoria di una IPT rispetto a una PT standard dipende dalle dimensioni della RAM, dal numero di processi e dal loro spazio di indirizzamento virtuale?",
+    risposta: "SI",
+    spiegazione: "Tutti questi fattori influenzano il confronto: la IPT ha dimensione proporzionale alla RAM, mentre la somma delle PT è proporzionale agli spazi virtuali dei processi."
+  },
+  {
+    sezione: "IPT — Risparmio di Memoria",
+    domanda: "Una IPT garantisce sempre risparmio di memoria quando lo spazio di indirizzamento di ogni processo è maggiore della dimensione della RAM?",
+    risposta: "SI",
+    spiegazione: "Una PT standard ha dimensione proporzionale all'address space virtuale; se questo supera la RAM, la PT risulta più grande della IPT (assumendo entry di uguale dimensione)."
+  },
+  {
+    sezione: "IPT — Risparmio di Memoria",
+    domanda: "Una IPT può risparmiare memoria anche quando lo spazio di indirizzamento di ogni processo è inferiore alla dimensione della RAM?",
+    risposta: "SI",
+    spiegazione: "L'IPT è unica per tutti i processi; con molti processi attivi la somma delle PT potrebbe superare la singola IPT, anche se ogni spazio di indirizzamento individuale è inferiore alla RAM."
+  },
+
+  // ── Sezione 9: IPT — Ricerca e HASH ─────────────────────────────────
+  {
+    sezione: "IPT — Ricerca e HASH",
+    domanda: "Nella IPT, la chiave di ricerca per tradurre un indirizzo è la coppia (pid, numero di frame fisico)?",
+    risposta: "NO",
+    spiegazione: "Il frame corrisponde all'indice della IPT, non è una chiave di ricerca. La chiave è la coppia (pid, numero di pagina virtuale)."
+  },
+  {
+    sezione: "IPT — Ricerca e HASH",
+    domanda: "Nella IPT, la chiave di ricerca per tradurre un indirizzo è la coppia (pid, numero di pagina virtuale)?",
+    risposta: "SI",
+    spiegazione: "Ogni entry della IPT contiene (pid, pagina virtuale); si ricerca questa coppia per trovare il frame fisico corrispondente (che è l'indice della entry trovata)."
+  },
+  {
+    sezione: "IPT — Ricerca e HASH",
+    domanda: "Per migliorare le prestazioni della IPT si sostituisce la IPT stessa con una tabella di HASH?",
+    risposta: "NO",
+    spiegazione: "Non si sostituisce: la IPT rimane. Si aggiunge una tabella di HASH per accelerare la ricerca; sostituirla sarebbe una struttura completamente diversa."
+  },
+  {
+    sezione: "IPT — Ricerca e HASH",
+    domanda: "Per migliorare le prestazioni della IPT si aggiunge ad essa una tabella di HASH?",
+    risposta: "SI",
+    spiegazione: "È la soluzione tipica: le entry della IPT vengono inserite direttamente nelle liste di chaining della HASH, senza allocazioni extra, rendendo la ricerca efficiente sia in tempo che in memoria."
+  },
+
+  // ── Sezione 10: Dynamic Loading e Dynamic Linking ───────────────────
+  {
+    sezione: "Dynamic Loading e Dynamic Linking",
+    domanda: "È possibile caricare dinamicamente un programma (dynamic loading) senza che sia necessario il dynamic linking?",
+    risposta: "SI",
+    spiegazione: "I due meccanismi sono indipendenti: un programma può essere linkato staticamente e caricato in modo dinamico/incrementale (es. program-based dynamic loading), senza dynamic linking."
+  },
+  {
+    sezione: "Dynamic Loading e Dynamic Linking",
+    domanda: "Il dynamic linking richiede necessariamente che il programma supporti anche il dynamic loading?",
+    risposta: "NO",
+    spiegazione: "Un programma può essere linkato dinamicamente (es. a una libreria condivisa già in memoria) senza usare il dynamic loading; i due meccanismi sono ortogonali e indipendenti."
+  },
+
+  // ── Sezione 11: IPT — Campo pid e TLB ───────────────────────────────
+  {
+    sezione: "IPT — Campo pid e TLB",
+    domanda: "Una IPT richiede un campo pid in ogni entry perché è una struttura globale condivisa da tutti i processi, mentre una PT standard è per-processo e il pid è implicito?",
+    risposta: "SI",
+    spiegazione: "La IPT mappa ogni frame fisico alla coppia (pid, pagina logica): senza pid non si saprebbe a quale processo appartiene quel frame. Una PT è per-processo, il pid è già noto dal contesto."
+  },
+  {
+    sezione: "IPT — Campo pid e TLB",
+    domanda: "La soluzione IPT+HASH è più efficiente nell'uso della memoria rispetto a una soluzione con sola tabella di HASH separata?",
+    risposta: "SI",
+    spiegazione: "Con IPT+HASH le entry della IPT vengono inserite direttamente nelle liste di chaining della HASH, evitando allocazioni/deallocazioni extra. Con una HASH separata occorrono allocazioni classiche a ogni inserimento/cancellazione."
+  },
+  {
+    sezione: "IPT — Campo pid e TLB",
+    domanda: "Una TLB può contenere entry di più processi contemporaneamente usando un campo aggiuntivo detto ASID (Address Space IDentifier)?",
+    risposta: "SI",
+    spiegazione: "Esistono TLB con campo ASID che permettono di mantenere entry di processi diversi senza doverle invalidare a ogni context switch."
+  },
+  {
+    sezione: "IPT — Campo pid e TLB",
+    domanda: "Una TLB che supporta solo il processo attualmente attivo non richiede alcun meccanismo di reset durante un context switch?",
+    risposta: "NO",
+    spiegazione: "Queste TLB necessitano di un azzeramento/reset a ogni context switch per eliminare le entry del processo uscente ed evitare traduzioni errate per il processo entrante."
+  },
+  {
+    sezione: "IPT — Campo pid e TLB",
+    domanda: "Il 'valid' bit in una entry della TLB ha lo stesso significato del 'valid' bit nella Page Table?",
+    risposta: "NO",
+    spiegazione: "Nella TLB il valid bit indica che l'entry è occupata/in uso (non libera). Nella PT indica che la pagina logica è associata a un frame fisico. I due significati sono diversi."
+  },
+
+  // ── Sezione 12: OS161 — Configurazione del Kernel ───────────────────
+  {
+    sezione: "OS161 — Configurazione Kernel",
+    domanda: "Aggiungere 'defoption project' e 'optfile project syscall/project.c' in conf.kern, copiare DUMBVM come PROJECT ed eseguire './config PROJECT' è sufficiente per far compilare syscall/project.c?",
+    risposta: "NO",
+    spiegazione: "Manca l'abilitazione esplicita dell'opzione: il file PROJECT deve contenere 'options project'. Senza questa riga project.c non viene compilato né incluso nelle dipendenze."
+  },
+  {
+    sezione: "OS161 — Configurazione Kernel",
+    domanda: "Il file generato automaticamente da './config PROJECT' (grazie a 'defoption project' in conf.kern) è opt-project.h (e non project.h)?",
+    risposta: "SI",
+    spiegazione: "Il sistema genera automaticamente opt-project.h. Un eventuale project.h deve essere creato manualmente dal programmatore."
+  },
+  {
+    sezione: "OS161 — Configurazione Kernel",
+    domanda: "opt-project.h viene generato da './config' solo se il file PROJECT contiene l'istruzione 'options project'?",
+    risposta: "NO",
+    spiegazione: "opt-project.h viene generato sempre, purché conf.kern contenga 'defoption project'. È il contenuto del file (#define OPT_PROJECT 0 o 1) a dipendere dalla presenza di 'options project' in PROJECT."
+  },
+  {
+    sezione: "OS161 — Configurazione Kernel",
+    domanda: "opt-project.h contiene la macro OPT_PROJECT con valore 1 se l'opzione è abilitata in PROJECT, e valore 0 altrimenti?",
+    risposta: "SI",
+    spiegazione: "Oltre alla protezione da inclusione multipla, il file contiene solo '#define OPT_PROJECT 1' o '#define OPT_PROJECT 0' in base alla configurazione del kernel."
+  },
+  {
+    sezione: "OS161 — Configurazione Kernel",
+    domanda: "Per far compilare project_init() in main.c solo quando l'opzione project è abilitata, occorre usare la compilazione condizionale con la macro OPT_PROJECT definita in opt-project.h?",
+    risposta: "SI",
+    spiegazione: "Si include opt-project.h e si usa: #if OPT_PROJECT  project_init();  #endif — questo garantisce che l'istruzione venga compilata solo se l'opzione è attiva nel file di configurazione."
+  },
+
+  // ── Sezione 13: OS161 — Processi Utente e Kernel ────────────────────
+  {
+    sezione: "OS161 — Processi Utente e Kernel",
+    domanda: "In OS161, per gestire una system call viene usato il trapframe (e non lo switchframe)?",
+    risposta: "SI",
+    spiegazione: "Una system call è gestita come una trap/interrupt software; il trapframe salva e ripristina il contesto del processo utente durante la transizione user→kernel→user."
+  },
+  {
+    sezione: "OS161 — Processi Utente e Kernel",
+    domanda: "Il trapframe di un processo OS161 viene allocato nello stack kernel del processo (non nello user stack)?",
+    risposta: "SI",
+    spiegazione: "Il trapframe è una struttura dati del kernel. Allocarlo nello user stack esporrebbe informazioni privilegiate al programma utente, che potrebbe corrompere lo stato del kernel."
+  },
+  {
+    sezione: "OS161 — Processi Utente e Kernel",
+    domanda: "I dispositivi I/O in OS161 sono mappati in kseg1 perché kseg1 non è mappato in cache, garantendo accessi diretti al dispositivo?",
+    risposta: "SI",
+    spiegazione: "Un accesso a un dispositivo I/O deve essere diretto e non cacheato. kseg1 non passa dalla cache, a differenza di kseg0, rendendolo l'unica mappatura corretta per i dispositivi I/O."
+  },
+  {
+    sezione: "OS161 — Processi Utente e Kernel",
+    domanda: "Un dispositivo I/O in OS161 potrebbe essere mappato in kseg0 senza causare problemi?",
+    risposta: "NO",
+    spiegazione: "kseg0 è mappato in cache: accedere a un dispositivo I/O attraverso la cache causerebbe letture/scritture errate, poiché i dati del dispositivo verrebbero incorrettamente cacheati."
+  },
+  {
+    sezione: "OS161 — Processi Utente e Kernel",
+    domanda: "Se buf in read(fd, buf, nb) è un indirizzo in kseg0 (spazio kernel), si tratta di un errore e la system call SYS_read deve rilevarlo e non eseguire l'operazione?",
+    risposta: "SI",
+    spiegazione: "È un errore di programmazione: un processo utente non deve passare indirizzi kernel come destinazione. SYS_read deve validare buf e restituire un errore invece di eseguire la lettura."
+  },
+
+  // ── Sezione 14: Gestione della Memoria — Working Set ────────────────
+  {
+    sezione: "Gestione della Memoria — Working Set",
+    domanda: "La politica di sostituzione delle pagine working set è una politica a dimensione fissa del resident set?",
+    risposta: "NO",
+    spiegazione: "La dimensione del resident set cambia dinamicamente, dipendendo dall'insieme di pagine incluse nella finestra temporale Delta. Al variare degli accessi, pagine entrano ed escono dal resident set."
+  },
+  {
+    sezione: "Gestione della Memoria — Working Set",
+    domanda: "Nella politica working set, la difficoltà di implementazione è dovuta all'impossibilità di stimare un buon valore di Delta?",
+    risposta: "NO",
+    spiegazione: "Il valore di Delta influenza solo le prestazioni della politica, non la sua fattibilità. Non è questo il motivo della difficoltà di implementazione."
+  },
+  {
+    sezione: "Gestione della Memoria — Working Set",
+    domanda: "Nella politica working set, il resident set deve essere aggiornato anche in assenza di page fault?",
+    risposta: "SI",
+    spiegazione: "Sì: ogni volta che una pagina acceduta al tempo t-Delta non viene acceduta successivamente deve essere rimossa dal resident set, anche senza che si verifichi un page fault."
+  },
+  {
+    sezione: "Gestione della Memoria — Working Set",
+    domanda: "Nella politica working set, è necessario tenere traccia del tempo dell'ultimo accesso per ogni pagina?",
+    risposta: "SI",
+    spiegazione: "Sì, perché solo le pagine il cui ultimo accesso è avvenuto dopo t-Delta devono essere mantenute nel resident set. È quindi indispensabile registrare il timestamp dell'ultimo accesso per ogni pagina."
+  },
+  {
+    sezione: "Gestione della Memoria — Working Set",
+    domanda: "Nella politica working set, è necessario mantenere una lista completa di tutti i tempi di accesso per ogni pagina?",
+    risposta: "NO",
+    spiegazione: "La lista completa è ridondante: è sufficiente registrare solo il tempo dell'ultimo accesso per decidere se una pagina rientra o meno nella finestra Delta."
+  },
+
+  // ── Sezione 15: TLB e Paginazione ───────────────────────────────────
+  {
+    sezione: "TLB e Paginazione",
+    domanda: "Il TLB reach (copertura della TLB) diminuisce quando la dimensione della pagina aumenta?",
+    risposta: "NO",
+    spiegazione: "Il TLB reach aumenta: il numero di entry nella TLB è costante, quindi con pagine più grandi ogni entry copre più memoria, aumentando la quantità totale di spazio coperto dalla TLB."
+  },
+  {
+    sezione: "TLB e Paginazione",
+    domanda: "La frammentazione aumenta quando la dimensione della pagina aumenta, perché sono necessarie partizioni contigue più grandi?",
+    risposta: "NO",
+    spiegazione: "La frammentazione interna aumenta con la dimensione della pagina, ma il motivo indicato è sbagliato: nella paginazione non esiste allocazione contigua. Le pagine possono essere allocate in frame fisici non contigui."
+  },
+  {
+    sezione: "TLB e Paginazione",
+    domanda: "Il prepaging è vantaggioso solo se la probabilità che una pagina pre-caricata venga effettivamente usata è superiore all'80%?",
+    risposta: "NO",
+    spiegazione: "Il prepaging è vantaggioso con alta probabilità di utilizzo, ma non esiste una soglia prestabilita dell'80%. La convenienza dipende dal rapporto tra costo del page fault e probabilità di utilizzo."
+  },
+  {
+    sezione: "TLB e Paginazione",
+    domanda: "Tutte le strutture dati del kernel richiedono allocazione contigua in memoria?",
+    risposta: "NO",
+    spiegazione: "Solo una parte delle strutture dati del kernel necessita di allocazione contigua per ragioni di efficienza, come ad esempio la page table. Molte altre strutture possono essere allocate in modo non contiguo."
+  },
+  {
+    sezione: "TLB e Paginazione",
+    domanda: "Lo slab allocator utilizza esclusivamente dimensioni potenza di 2?",
+    risposta: "NO",
+    spiegazione: "È il Buddy allocator a usare dimensioni potenza di 2. Lo slab allocator gestisce cache di oggetti di dimensione fissa arbitraria, non necessariamente potenze di 2."
+  },
+  {
+    sezione: "TLB e Paginazione",
+    domanda: "Una free list di pagine ha una frammentazione interna media pari a mezza pagina?",
+    risposta: "NO",
+    spiegazione: "Le free list non hanno problemi di frammentazione interna: non contengono dati effettivi, ma rappresentano solo spazio disponibile. La frammentazione interna riguarda le aree allocate, non quelle libere."
+  },
+
+  // ── Sezione 16: OS161 — Indirizzi Logici e Fisici ───────────────────
+  {
+    sezione: "OS161 — Indirizzi Logici e Fisici",
+    domanda: "Su un sistema OS161/MIPS con 4MB di RAM, l'indirizzo 0x80803005 può essere un indirizzo logico utente?",
+    risposta: "NO",
+    spiegazione: "0x80803005 > 0x80000000 (2GB): supera il limite dello spazio indirizzabile utente (kuseg), che in MIPS arriva fino a 0x7FFFFFFF."
+  },
+  {
+    sezione: "OS161 — Indirizzi Logici e Fisici",
+    domanda: "Su un sistema OS161/MIPS con 4MB di RAM, l'indirizzo 0x80803005 può essere un indirizzo fisico?",
+    risposta: "NO",
+    spiegazione: "L'indirizzo fisico corrispondente sarebbe 0x80803005 - 0x80000000 = 0x803005 ≈ 8MB, che supera la RAM disponibile di 4MB (0x400000)."
+  },
+  {
+    sezione: "OS161 — Indirizzi Logici e Fisici",
+    domanda: "Su un sistema OS161/MIPS con 4MB di RAM, l'indirizzo 0x80803005 può essere un indirizzo logico kernel valido?",
+    risposta: "NO",
+    spiegazione: "Sebbene 0x80803005 rientri nell'intervallo kseg0, non è compatibile con 4MB di RAM: gli indirizzi kernel validi in kseg0 devono essere < 0x80400000 (base kseg0 + 4MB). 0x80803005 è oltre questo limite."
+  },
+  {
+    sezione: "OS161 — Indirizzi Logici e Fisici",
+    domanda: "Su un sistema OS161/MIPS con 4MB di RAM, l'indirizzo 0x312010 può essere un indirizzo logico utente?",
+    risposta: "SI",
+    spiegazione: "0x312010 ≈ 3.07MB < 0x80000000 (2GB): rientra nello spazio utente (kuseg) di MIPS."
+  },
+  {
+    sezione: "OS161 — Indirizzi Logici e Fisici",
+    domanda: "Su un sistema OS161/MIPS con 4MB di RAM, l'indirizzo 0x312010 può essere un indirizzo fisico?",
+    risposta: "SI",
+    spiegazione: "0x312010 ≈ 3.07MB < 4MB (0x400000): rientra nell'intervallo degli indirizzi fisici validi per una RAM da 4MB."
+  },
+  {
+    sezione: "OS161 — Indirizzi Logici e Fisici",
+    domanda: "Su un sistema OS161/MIPS con 4MB di RAM, l'indirizzo 0x312010 può essere un indirizzo logico kernel?",
+    risposta: "NO",
+    spiegazione: "0x312010 si trova nell'intervallo kuseg (spazio utente). Gli indirizzi logici kernel in MIPS si trovano in kseg0 (da 0x80000000) o kseg1 (da 0xA0000000)."
+  },
+  {
+    sezione: "OS161 — Indirizzi Logici e Fisici",
+    domanda: "Su un sistema OS161/MIPS con 4MB di RAM, l'indirizzo 0x532100 può essere un indirizzo logico utente?",
+    risposta: "SI",
+    spiegazione: "0x532100 ≈ 5.19MB < 0x80000000 (2GB): rientra nello spazio utente (kuseg) di MIPS."
+  },
+  {
+    sezione: "OS161 — Indirizzi Logici e Fisici",
+    domanda: "Su un sistema OS161/MIPS con 4MB di RAM, l'indirizzo 0x532100 può essere un indirizzo fisico?",
+    risposta: "NO",
+    spiegazione: "0x532100 ≈ 5.19MB > 4MB (0x400000): supera la RAM disponibile, quindi non può essere un indirizzo fisico valido."
+  },
+  {
+    sezione: "OS161 — Indirizzi Logici e Fisici",
+    domanda: "Su un sistema OS161/MIPS con 4MB di RAM, l'indirizzo 0x532100 può essere un indirizzo logico kernel?",
+    risposta: "NO",
+    spiegazione: "0x532100 si trova nell'intervallo kuseg (spazio utente). Non rientra negli intervalli kseg0 o kseg1 riservati al kernel in MIPS."
+  },
+
+  // ── Sezione 17: OS161 — dumbvm ──────────────────────────────────────
+  {
+    sezione: "OS161 — dumbvm",
+    domanda: "In dumbvm, la memoria fisica è allocata a multipli della dimensione di pagina perché ciò riduce la frammentazione interna?",
+    risposta: "NO",
+    spiegazione: "L'allineamento alla pagina potrebbe addirittura aumentare la frammentazione interna: l'allocazione contigua standard, senza padding alla pagina, non presenta frammentazione interna."
+  },
+  {
+    sezione: "OS161 — dumbvm",
+    domanda: "In dumbvm, la memoria fisica è allocata a multipli della dimensione di pagina perché la MMU MIPS usa una TLB e la traduzione logico-fisica richiede la corrispondenza pagina-frame?",
+    risposta: "SI",
+    spiegazione: "Poiché la MMU MIPS opera tramite TLB, la traduzione degli indirizzi avviene in unità di pagine. È quindi necessario che le allocazioni fisiche siano allineate e di dimensione multipla di pagina."
+  },
+  {
+    sezione: "OS161 — dumbvm",
+    domanda: "dumbvm implementa una page table per la traduzione degli indirizzi logico-fisici?",
+    risposta: "NO",
+    spiegazione: "In dumbvm non esiste una page table: utilizza una mappatura diretta e semplificata, caricando le entry della TLB manualmente senza una struttura a tabella delle pagine sottostante."
+  },
+  {
+    sezione: "OS161 — dumbvm",
+    domanda: "kmalloc può allocare solo blocchi la cui dimensione è un multiplo della dimensione di pagina?",
+    risposta: "NO",
+    spiegazione: "kmalloc può allocare blocchi di qualsiasi dimensione, anche ben inferiori a una pagina. Gestisce internamente allocazioni di dimensioni arbitrarie tramite la sua logica di gestione dello heap del kernel."
+  },
+
+  // ── Sezione 18: OS161 — Lock e Condition Variables ──────────────────
+  {
+    sezione: "OS161 — Lock e Condition Variables",
+    domanda: "La funzione cv_wait riceve un lock come parametro perché esso è necessario come parametro nella chiamata interna a wchan_sleep?",
+    risposta: "NO",
+    spiegazione: "La funzione wchan_sleep richiede uno spinlock come parametro, non un lock di alto livello. Il motivo per cui cv_wait riceve il lock è diverso."
+  },
+  {
+    sezione: "OS161 — Lock e Condition Variables",
+    domanda: "La funzione cv_wait riceve un lock come parametro perché il thread chiamante deve essere il proprietario del lock?",
+    risposta: "SI",
+    spiegazione: "È uno dei requisiti fondamentali di cv_wait: il thread che la invoca deve possedere il lock. Questo garantisce la correttezza della sincronizzazione al momento della sospensione."
+  },
+  {
+    sezione: "OS161 — Lock e Condition Variables",
+    domanda: "La funzione cv_wait riceve un lock come parametro perché il lock deve essere rilasciato e poi riacquisito da cv_wait durante l'attesa?",
+    risposta: "SI",
+    spiegazione: "Questo è esattamente il comportamento di cv_wait: rilascia atomicamente il lock prima di sospendere il thread, e lo riacquisisce al risveglio, garantendo la mutua esclusione al ritorno."
+  },
+  {
+    sezione: "OS161 — Lock e Condition Variables",
+    domanda: "La funzione cv_wait riceve un lock come parametro perché il lock deve essere rilasciato e riacquisito internamente da wchan_sleep?",
+    risposta: "NO",
+    spiegazione: "wchan_sleep lavora con uno spinlock, non con un lock di alto livello. È cv_wait stessa, non wchan_sleep, a gestire il rilascio e la riacquisizione del lock."
+  },
+  {
+    sezione: "OS161 — Lock e Condition Variables",
+    domanda: "Un lock in OS161 può essere implementato tramite un semaforo binario, senza alcun elemento o requisito aggiuntivo?",
+    risposta: "NO",
+    spiegazione: "Il semaforo binario non gestisce il concetto di proprietà (ownership): chiunque può eseguire una V (signal), anche chi non ha eseguito la P (wait). Un lock richiede che solo il proprietario possa rilasciarlo."
+  },
+  {
+    sezione: "OS161 — Lock e Condition Variables",
+    domanda: "Un lock in OS161 può essere implementato tramite un semaforo binario, con un requisito aggiuntivo?",
+    risposta: "SI",
+    spiegazione: "Sì: il requisito aggiuntivo è la gestione della proprietà (ownership), ovvero garantire che solo il thread che ha acquisito il lock possa rilasciarlo."
+  },
+  {
+    sezione: "OS161 — Lock e Condition Variables",
+    domanda: "Un lock in OS161 può essere implementato tramite una condition variable?",
+    risposta: "NO",
+    spiegazione: "La condition variable ha bisogno di un lock già esistente per funzionare e non è pensata per la mutua esclusione in sé. Usarla per implementare un lock creerebbe una dipendenza circolare."
+  },
+  {
+    sezione: "OS161 — Lock e Condition Variables",
+    domanda: "Un lock in OS161 può essere implementato tramite un wait channel (wchan), combinato con uno spinlock e una gestione appropriata della proprietà?",
+    risposta: "SI",
+    spiegazione: "Sì: questa è un'implementazione valida. Il wait channel gestisce l'attesa, lo spinlock protegge le strutture interne, e la gestione della proprietà garantisce la semantica corretta del lock."
+  },
+  {
+    sezione: "OS161 — Lock e Condition Variables",
+    domanda: "L'implementazione di lock_acquire può includere una chiamata alle funzioni spinlock_data_get e spinlock_data_testandset?",
+    risposta: "NO",
+    spiegazione: "Queste funzioni operano a un livello molto più basso: sono i mattoni fondamentali usati per implementare gli spinlock. lock_acquire usa gli spinlock come primitive, non le istruzioni hardware sottostanti."
+  },
+  {
+    sezione: "OS161 — Lock e Condition Variables",
+    domanda: "L'implementazione di lock_acquire può includere una chiamata alla funzione P su un semaforo?",
+    risposta: "SI",
+    spiegazione: "Sì, se il lock è implementato tramite semaforo binario: lock_acquire corrisponde a una P (wait/decremento), e lock_release a una V (signal/incremento)."
+  },
+  {
+    sezione: "OS161 — Lock e Condition Variables",
+    domanda: "L'implementazione di lock_acquire può includere una chiamata a cv_wait?",
+    risposta: "NO",
+    spiegazione: "cv_wait necessita di un lock esistente per funzionare e non è pensata per la mutua esclusione. Usarla in lock_acquire creerebbe una dipendenza circolare (cv_wait richiede un lock, lock_acquire chiamerebbe cv_wait)."
+  },
+  {
+    sezione: "OS161 — Lock e Condition Variables",
+    domanda: "L'implementazione di lock_acquire può includere una chiamata a wchan_sleep?",
+    risposta: "SI",
+    spiegazione: "Sì, nell'implementazione basata su wait channel e spinlock: il thread che non riesce ad acquisire il lock chiama wchan_sleep per sospendersi, in attesa che il lock venga rilasciato e venga svegliato."
+  },
+
+  // ── Sezione 19: RAID — Struttura e Affidabilità ──────────────────────
+  {
+    sezione: "RAID — Struttura e Affidabilità",
+    domanda: "RAID è l'acronimo di 'Redundant Array of Independent Disks'?",
+    risposta: "SI",
+    spiegazione: "RAID è una tecnologia di archiviazione che combina più dischi in un'unica unità logica per migliorare prestazioni, affidabilità e/o tolleranza ai guasti."
+  },
+  {
+    sezione: "RAID — Struttura e Affidabilità",
+    domanda: "RAID 1 (mirroring) può migliorare le prestazioni di lettura rispetto a un singolo disco?",
+    risposta: "SI",
+    spiegazione: "In RAID 1 i dati sono duplicati su più dischi: le letture possono essere servite da qualsiasi disco del mirror, potenzialmente migliorando le prestazioni di lettura."
+  },
+  {
+    sezione: "RAID — Struttura e Affidabilità",
+    domanda: "Il MTTF (Mean Time to Failure) rappresenta il tempo medio tra l'inizio dell'operazione di un sistema e il suo guasto?",
+    risposta: "SI",
+    spiegazione: "L'MTTF misura la durata media di funzionamento prima del guasto. In RAID riflette il tempo medio prima che un disco si guasti."
+  },
+  {
+    sezione: "RAID — Struttura e Affidabilità",
+    domanda: "Il MTTDL (Mean Time to Data Loss) in RAID 1 si calcola con la formula MTTF² / (2 × MTTR)?",
+    risposta: "SI",
+    spiegazione: "La formula MTTDL = MTTF² / (2 × MTTR) deriva dalla probabilità che il secondo disco si guasti prima che il primo venga riparato. Rappresenta il tempo medio atteso prima che si verifichi una perdita di dati."
+  },
+  {
+    sezione: "RAID — Struttura e Affidabilità",
+    domanda: "Aumentare il valore di MTTR (tempo di riparazione) aumenta il MTTDL in una configurazione RAID 1?",
+    risposta: "NO",
+    spiegazione: "Un MTTR più alto aumenta la finestra di vulnerabilità in cui un secondo guasto causerebbe perdita di dati. Nella formula MTTDL = MTTF² / (2 × MTTR), il MTTDL diminuisce all'aumentare di MTTR."
+  },
+  {
+    sezione: "RAID — Struttura e Affidabilità",
+    domanda: "In una configurazione RAID 1 con 4 dischi (2 coppie speculari), il MTTDL dipende dalla probabilità che entrambi i dischi di almeno una coppia si guastino?",
+    risposta: "SI",
+    spiegazione: "La perdita di dati avviene quando entrambi i dischi di una stessa coppia speculare si guastano. Indipendentemente dal numero di coppie, il MTTDL è associato allo scenario in cui entrambi i dischi di una qualsiasi coppia si guastano prima della riparazione."
+  },
+
+  // ── Sezione 20: Page Fault e Gestione della Memoria ─────────────────
+  {
+    sezione: "Page Fault e Gestione della Memoria",
+    domanda: "Un page fault si verifica quando un processo tenta di accedere a una pagina non presente in memoria principale?",
+    risposta: "SI",
+    spiegazione: "Il page fault avviene quando la pagina richiesta non è in RAM (può essere sul backing store o non ancora caricata). Il SO interviene con il page fault handler per risolvere la situazione."
+  },
+  {
+    sezione: "Page Fault e Gestione della Memoria",
+    domanda: "Nella gestione di un page fault, il sistema operativo deve caricare la pagina mancante dal backing store prima di riprendere l'esecuzione del processo?",
+    risposta: "SI",
+    spiegazione: "I passi principali sono: trap al SO, localizzazione della pagina nel backing store, caricamento in un frame libero, aggiornamento della page table, ripresa dell'esecuzione del processo."
+  },
+  {
+    sezione: "Page Fault e Gestione della Memoria",
+    domanda: "Con 3 page frame, sostituzione LRU, e iterazione per colonne della matrice A[100][100] (ogni pagina contiene 2 righe, 200 interi), il numero di page fault generati è 5000?",
+    risposta: "SI",
+    spiegazione: "Una pagina contiene 2 righe (200 interi). Iterando per colonne, ogni accesso a una colonna richiede una pagina diversa. Con 50 pagine per la matrice e 100 colonne, ogni colonna genera 50 page fault: 100 × 50 = 5000 totali."
+  },
+
+  // ── Sezione 21: Bitmap e Free List ──────────────────────────────────
+  {
+    sezione: "Bitmap e Free List",
+    domanda: "Le bitmap sono più efficienti delle free list nella ricerca di intervalli contigui di frame/blocchi liberi?",
+    risposta: "SI",
+    spiegazione: "Le liste sono lineari (O(n)), mentre le bitmap permettono ricerche con performance logaritmica (O(log n)) con algoritmi appropriati, rendendole più adatte alla ricerca di blocchi contigui."
+  },
+  {
+    sezione: "Bitmap e Free List",
+    domanda: "Le free list sono la soluzione migliore sia per la memoria dei processi che per la memoria del kernel?",
+    risposta: "NO",
+    spiegazione: "Le free list sono ottime per i processi (che non necessitano di memoria contigua, O(1)). Per il kernel no: richiede memoria contigua (es. per l'allocazione della page table), per cui le bitmap sono più adatte."
+  },
+  {
+    sezione: "Bitmap e Free List",
+    domanda: "Per un file system basato su i-node, le bitmap gestiscono i blocchi liberi meglio delle free list?",
+    risposta: "NO",
+    spiegazione: "In un file system basato su i-node non è necessaria allocazione contigua. Le free list sono O(1), mentre le bitmap offrono al massimo performance logaritmica. Quindi le free list sono preferibili."
+  },
+  {
+    sezione: "Bitmap e Free List",
+    domanda: "In una gestione della memoria con page table a due livelli, la ricerca di un blocco libero in una free list ha costo lineare?",
+    risposta: "NO",
+    spiegazione: "Con page table a due livelli non è richiesta memoria contigua: la free list è O(1), non O(n). La ricerca lineare sarebbe necessaria solo se si cercasse un blocco con requisiti specifici di contiguità."
+  },
+  {
+    sezione: "Bitmap e Free List",
+    domanda: "Una free list ordinata ha costo lineare sia per l'allocazione di spazio contiguo che per la liberazione della memoria?",
+    risposta: "SI",
+    spiegazione: "L'allocazione richiede una ricerca nella lista (O(n)), mentre la liberazione richiede un inserimento in posizione ordinata (O(n)). Entrambe le operazioni sono lineari."
+  },
+  {
+    sezione: "Bitmap e Free List",
+    domanda: "In un file system basato su FAT, una bitmap offre prestazioni temporali migliori rispetto a una free list?",
+    risposta: "NO",
+    spiegazione: "FAT non richiede allocazione contigua: la free list è direttamente implementata nella FAT ed è O(1). Una bitmap offrirebbe al massimo performance logaritmica, quindi la free list è preferibile con FAT."
+  },
+
+  // ── Sezione 22: OS161 — System Call read() ───────────────────────────
+  {
+    sezione: "OS161 — System Call read()",
+    domanda: "In OS161, il buffer di destinazione nella system call read() deve essere in memoria utente (non in memoria kernel)?",
+    risposta: "SI",
+    spiegazione: "read() è una system call per i processi utente: il buffer di destinazione deve essere in memoria utente. Passare un indirizzo kernel è un errore di programmazione che il SO deve rilevare e segnalare."
+  },
+  {
+    sezione: "OS161 — System Call read()",
+    domanda: "Due processi che aprono lo stesso file in OS161 ottengono necessariamente lo stesso numero di file descriptor?",
+    risposta: "NO",
+    spiegazione: "I file descriptor sono assegnati per-processo in base alla sequenza di open() eseguita. Non esiste nessun vincolo che due processi ottengano lo stesso numero di fd per lo stesso file."
+  },
+  {
+    sezione: "OS161 — System Call read()",
+    domanda: "Due processi che aprono lo stesso file con open() separati in OS161 leggono il file in modo indipendente, ciascuno con il proprio offset?",
+    risposta: "SI",
+    spiegazione: "Ogni processo che esegue open() ottiene la propria struct openfile con il proprio offset: le letture sono quindi indipendenti e non interferiscono tra loro."
+  },
+  {
+    sezione: "OS161 — System Call read()",
+    domanda: "Due processi che eseguono solo operazioni di lettura concorrenti sullo stesso file in OS161 necessitano di un lock?",
+    risposta: "NO",
+    spiegazione: "Le sole operazioni di lettura non modificano lo stato condiviso: non è necessario il lock. Un lock sarebbe necessario solo in presenza di scritture concorrenti."
+  },
+  {
+    sezione: "OS161 — System Call read()",
+    domanda: "Se l'implementazione di sys_read usa un buffer kernel allocato con kmalloc e liberato con kfree all'interno della stessa chiamata, due processi concorrenti condividono lo stesso buffer?",
+    risposta: "NO",
+    spiegazione: "Ogni invocazione di sys_read alloca e libera il proprio buffer: i buffer sono indipendenti. Sarebbero condivisi solo con un buffer globale, ma in tal caso servirebbe sincronizzazione."
+  },
+  {
+    sezione: "OS161 — System Call read()",
+    domanda: "Nell'implementazione di sys_read con buffer kernel, il valore di ritorno (nread) può essere inferiore al parametro size?",
+    risposta: "SI",
+    spiegazione: "Sì: size è il numero massimo di byte da leggere, ma il file potrebbe terminare prima. In quel caso nread = size - ku.uio_resid sarà inferiore a size."
+  },
+  {
+    sezione: "OS161 — System Call read()",
+    domanda: "Nell'implementazione di sys_read mostrata, kmalloc potrebbe essere chiamato con size/2 invece di size?",
+    risposta: "SI",
+    spiegazione: "Sì, ma richiederebbe più chiamate VOP_READ per leggere tutti i 'size' byte. L'implementazione proposta legge tutto in una singola VOP_READ, più semplice ma che richiede un buffer di dimensione 'size'."
+  },
+
+  // ── Sezione 23: OS161 — Thread e Scheduling ──────────────────────────
+  {
+    sezione: "OS161 — Thread e Scheduling",
+    domanda: "Le funzioni thread_switch e thread_yield in OS161 svolgono esattamente lo stesso compito?",
+    risposta: "NO",
+    spiegazione: "Pur essendo simili, thread_switch è più generale. thread_yield è un caso particolare di thread_switch in cui il nuovo stato del thread corrente è READY. thread_switch permette anche altri stati."
+  },
+  {
+    sezione: "OS161 — Thread e Scheduling",
+    domanda: "In OS161, thread_yield può essere visto come un caso particolare di thread_switch in cui il nuovo stato del thread corrente è READY?",
+    risposta: "SI",
+    spiegazione: "Sì: thread_yield cede la CPU mantenendo il thread in stato READY. thread_switch è più generale e permette di portare il thread in stati diversi da READY."
+  },
+  {
+    sezione: "OS161 — Thread e Scheduling",
+    domanda: "In OS161, un nuovo thread kernel viene eseguito immediatamente dopo la sua creazione?",
+    risposta: "NO",
+    spiegazione: "Il nuovo thread viene inserito nella coda dei thread pronti (READY). Potrà eseguire solo al prossimo thread_switch, non immediatamente dopo la creazione."
+  },
+
+  // ── Sezione 24: OS161 — System Call write() e open() ─────────────────
+  {
+    sezione: "OS161 — System Call write() e open()",
+    domanda: "La per-process file table in OS161 è allocata in memoria utente?",
+    risposta: "NO",
+    spiegazione: "La per-process file table è una struttura dati interna del kernel: è in memoria kernel. Il fatto che sia dedicata a un processo non implica che sia accessibile in modalità utente da quel processo."
+  },
+  {
+    sezione: "OS161 — System Call write() e open()",
+    domanda: "Due processi che hanno lo stesso numero di file descriptor (es. fd=5) scrivono necessariamente sullo stesso file?",
+    risposta: "NO",
+    spiegazione: "I file descriptor sono assegnati per-processo. Avere lo stesso numero non implica che puntino allo stesso file (eccetto stdin/stdout/stderr). I fd sono gestiti indipendentemente da ogni processo."
+  },
+  {
+    sezione: "OS161 — System Call write() e open()",
+    domanda: "Due processi con lo stesso numero di fd non scrivono mai sullo stesso file?",
+    risposta: "NO",
+    spiegazione: "Sebbene non frequente, due processi possono avere lo stesso numero di fd mappato sullo stesso file. In tal caso scriverebbero sullo stesso file e sarebbero necessarie opportune sincronizzazioni."
+  },
+  {
+    sezione: "OS161 — System Call write() e open()",
+    domanda: "In sys_write, il ciclo for per stdout/stderr può essere sostituito con 'for (i=0; i<size; i++) { kprintf(\"%c\", p[i]); }'?",
+    risposta: "SI",
+    spiegazione: "Sì: kprintf con formato %c è equivalente a putch, quindi il comportamento è identico al ciclo originale."
+  },
+  {
+    sezione: "OS161 — System Call write() e open()",
+    domanda: "In sys_write, il ciclo for per stdout/stderr può essere sostituito con 'kprintf(\"%s\", p)'?",
+    risposta: "NO",
+    spiegazione: "No: il formato %s richiede una stringa terminata da '\\0', ma write() non garantisce che il buffer sia null-terminated. Ciò potrebbe causare letture fuori dai limiti del buffer."
+  },
+  {
+    sezione: "OS161 — System Call write() e open()",
+    domanda: "In sys_write, il ciclo for per stdout/stderr può essere sostituito con 'kprintf(\"%s\", &p)'?",
+    risposta: "NO",
+    spiegazione: "No: oltre al problema della terminazione con '\\0', l'istruzione è formalmente sbagliata. &p è di tipo char** (puntatore a puntatore a char), non char*, quindi kprintf riceverebbe un tipo errato."
+  },
+  {
+    sezione: "OS161 — System Call write() e open()",
+    domanda: "In sys_write, il ciclo for per stdout/stderr può essere sostituito con 'file_write(fd, p, size)'?",
+    risposta: "NO",
+    spiegazione: "No: file_write supporta solo l'output su file, non sulla console. Se file_write supportasse la console, la gestione speciale di stdout/stderr in sys_write non avrebbe alcun senso."
+  },
+
+  // ── Sezione 25: File System — Organizzazione e Allocazione ──────────
+  {
+    sezione: "File System — Organizzazione e Allocazione",
+    domanda: "Un'applicazione può supporre che l'header di un file e ogni sua sezione inizino sempre all'inizio di un blocco del disco?",
+    risposta: "NO",
+    spiegazione: "Non necessariamente: la memorizzazione nei blocchi del disco è gestita a un livello differente rispetto all'organizzazione logica del file. L'applicazione non controlla dove ogni sezione inizia a livello di blocco."
+  },
+  {
+    sezione: "File System — Organizzazione e Allocazione",
+    domanda: "Un file di testo copiato su tre file system con allocazione diversa (contigua, collegata, i-node) ha sempre la stessa frammentazione interna?",
+    risposta: "NO",
+    spiegazione: "La dimensione del file è la stessa, ma l'occupazione dipende dall'organizzazione del file system. La frammentazione interna varia tra i diversi tipi di allocazione e non può essere assunta uguale."
+  },
+  {
+    sezione: "File System — Organizzazione e Allocazione",
+    domanda: "Tre file di testo separati (a.txt, b.txt, c.txt) possono condividere lo stesso blocco del disco nel file system?",
+    risposta: "NO",
+    spiegazione: "No: file diversi occupano blocchi diversi nel file system. La memorizzazione di file separati prevede blocchi distinti."
+  },
+  {
+    sezione: "File System — Organizzazione e Allocazione",
+    domanda: "Dopo compressione in un archivio (es. .zip), il contenuto di più file può essere memorizzato (almeno parzialmente) nello stesso blocco del disco?",
+    risposta: "SI",
+    spiegazione: "Sì: l'operazione di compressione produce un singolo file archivio. I dati compressi di tutti i file originali sono memorizzati in sequenza nell'archivio, quindi contenuti di file diversi possono condividere lo stesso blocco."
+  },
+
+  // ── Sezione 26: OS161 — File System e System Calls ──────────────────
+  {
+    sezione: "OS161 — File System e System Calls",
+    domanda: "systemFileTable in OS161 è un array di struct openfile (non di puntatori) perché è una struttura globale condivisa da tutti i processi del sistema?",
+    risposta: "SI",
+    spiegazione: "La systemFileTable è la tabella globale del sistema che tiene traccia di tutti i file aperti. Contiene direttamente le struct openfile. La fileTable per-processo contiene invece puntatori a queste entry."
+  },
+  {
+    sezione: "OS161 — File System e System Calls",
+    domanda: "fileTable in OS161 è un array di puntatori a struct openfile perché le sue entry puntano alle struct openfile nella systemFileTable?",
+    risposta: "SI",
+    spiegazione: "Sì: la fileTable per-processo contiene puntatori alle entry della systemFileTable. Più processi possono puntare alla stessa struct openfile, e per questo esiste il campo countRef."
+  },
+  {
+    sezione: "OS161 — File System e System Calls",
+    domanda: "Il campo countRef nella struct openfile è ridondante rispetto al contatore di riferimenti interno al vnode?",
+    risposta: "NO",
+    spiegazione: "Non è ridondante: esistono due livelli di condivisione. Il contatore del vnode conta quante struct openfile puntano allo stesso file. Il countRef conta quante entry della fileTable per-processo puntano alla stessa openfile. Sono livelli distinti."
+  },
+  {
+    sezione: "OS161 — File System e System Calls",
+    domanda: "Per supportare il lock dei file in OS161, è preferibile uno spinlock posizionato nella systemFileTable?",
+    risposta: "NO",
+    spiegazione: "È preferibile un lock (non spinlock) per evitare il busy waiting. Il lock dovrebbe essere posizionato nella struct vnode, garantendo la mutua esclusione sull'accesso al file indipendentemente da quale processo accede."
+  },
+  {
+    sezione: "OS161 — File System e System Calls",
+    domanda: "La funzione copyout in OS161 effettua una copia dalla memoria kernel alla memoria utente?",
+    risposta: "SI",
+    spiegazione: "Sì: copyout ha sorgente in memoria kernel e destinazione in memoria utente. Al contrario, copyin ha sorgente in memoria utente e destinazione in memoria kernel. Entrambe forniscono protezioni aggiuntive rispetto a memmove."
+  },
+
+  // ── Sezione 27: OS161 — Spinlock e Test-and-Set ──────────────────────
+  {
+    sezione: "OS161 — Spinlock e Test-and-Set",
+    domanda: "spinlock_acquire in OS161 implementa il pattern test-and-test-and-set: prima attende con una semplice lettura (spinlock_data_get), poi tenta l'acquisizione con test-and-set (spinlock_data_testandset)?",
+    risposta: "SI",
+    spiegazione: "Sì: l'attesa viene consumata tramite spinlock_data_get (sola lettura, meno costosa), mentre l'acquisizione effettiva usa spinlock_data_testandset. Questo riduce il traffico sul bus di memoria rispetto a usare solo test-and-set."
+  },
+  {
+    sezione: "OS161 — Spinlock e Test-and-Set",
+    domanda: "Nel pattern test-and-test-and-set, usare operazioni di sola lettura per l'attesa è più efficiente rispetto all'uso continuato di test-and-set?",
+    risposta: "SI",
+    spiegazione: "Sì: la lettura semplice ha un costo inferiore rispetto alla test-and-set, che richiede accesso esclusivo al bus di memoria. Il pattern riduce significativamente il traffico sul bus durante la fase di attesa."
+  },
+  {
+    sezione: "OS161 — Spinlock e Test-and-Set",
+    domanda: "spinlock_acquire2, nella versione originale mostrata (che fa 'continue' se testandset != 0), è già equivalente a spinlock_acquire senza modifiche?",
+    risposta: "NO",
+    spiegazione: "No: la versione originale è buggy. Diventa equivalente se nell'if si controlla che il risultato sia != 0 (e si fa break quando == 0). Quando testandset restituisce 0, il lock è stato acquisito e si deve uscire dal ciclo."
+  }
+
+]; // fine DB
+
+// ═══════════════════════════════════════════════════════════════════════
+//  STATO
+// ═══════════════════════════════════════════════════════════════════════
+let quiz    = [];   // 15 domande selezionate
+let qIdx    = 0;    // indice corrente
+let score   = 0;    // risposte corrette
+let wrong   = [];   // { q, userAns }
+let answered = false;
+
+// ═══════════════════════════════════════════════════════════════════════
+//  NAVIGAZIONE
+// ═══════════════════════════════════════════════════════════════════════
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function adjustCount(delta) {
+  const inp = document.getElementById('quiz-count');
+  const next = Math.min(Math.max(1, (parseInt(inp.value) || 15) + delta), DB.length);
+  inp.value = next;
+}
+
+function syncHomeCount() {
+  const n   = DB.length;
+  const inp = document.getElementById('quiz-count');
+  document.getElementById('home-total').textContent = n;
+  inp.max = n;
+  if (parseInt(inp.value) > n) inp.value = n;
+}
+
+function goHome() {
+  syncHomeCount();
+  show('screen-home');
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  QUIZ
+// ═══════════════════════════════════════════════════════════════════════
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startQuiz() {
+  const raw   = parseInt(document.getElementById('quiz-count').value) || 15;
+  const count = Math.min(Math.max(1, raw), DB.length);
+  document.getElementById('quiz-count').value = count; // corregge valori fuori range
+  quiz     = shuffle(DB).slice(0, count);
+  qIdx     = 0;
+  score    = 0;
+  wrong    = [];
+  answered = false;
+  show('screen-quiz');
+  renderQ();
+}
+
+function renderQ() {
+  const q     = quiz[qIdx];
+  const total = quiz.length;
+  const pct   = Math.round((qIdx / total) * 100);
+
+  // topbar
+  document.getElementById('q-counter').textContent  = `Domanda ${qIdx + 1} / ${total}`;
+  document.getElementById('live-score').textContent  = `✓ ${score} corrette`;
+
+  // progress
+  document.getElementById('prog-fill').style.width   = `${pct}%`;
+  document.getElementById('prog-label').textContent  = `${pct}%`;
+
+  // question
+  document.getElementById('q-section').textContent  = q.sezione || '';
+  document.getElementById('q-label').textContent    = `Domanda ${qIdx + 1}`;
+  document.getElementById('q-text').textContent     = q.domanda;
+
+  // reset buttons
+  const bSi = document.getElementById('btn-si');
+  const bNo = document.getElementById('btn-no');
+  bSi.disabled = false;
+  bNo.disabled = false;
+  bSi.classList.remove('selected');
+  bNo.classList.remove('selected');
+
+  // reset feedback, next & exit confirm
+  document.getElementById('feedback-box').style.display = 'none';
+  document.getElementById('feedback-box').innerHTML    = '';
+  document.getElementById('btn-next').style.display   = 'none';
+  document.getElementById('exit-confirm').style.display = 'none';
+
+  answered = false;
+}
+
+function answer(choice) {
+  if (answered) return;
+  answered = true;
+
+  const q         = quiz[qIdx];
+  const isCorrect = choice === q.risposta;
+
+  if (isCorrect) {
+    score++;
+  } else {
+    wrong.push({ q, userAns: choice });
+  }
+
+  // update live score
+  document.getElementById('live-score').textContent = `✓ ${score} corrette`;
+
+  // style buttons
+  const bSi = document.getElementById('btn-si');
+  const bNo = document.getElementById('btn-no');
+  bSi.disabled = true;
+  bNo.disabled = true;
+  if (choice === 'SI') bSi.classList.add('selected');
+  else                 bNo.classList.add('selected');
+
+  // feedback
+  const fb  = document.getElementById('feedback-box');
+  const cls = isCorrect ? 'correct' : 'wrong';
+  fb.innerHTML = `
+    <div class="feedback feedback-${cls}">
+      <div class="feedback-verdict">
+        ${isCorrect ? '✅ Corretto!' : '❌ Sbagliato!'}
+      </div>
+      ${!isCorrect ? `<div class="feedback-correct-ans">Risposta corretta: <strong>${q.risposta}</strong></div>` : ''}
+      <div class="feedback-exp"><strong>Spiegazione &nbsp;—</strong> ${q.spiegazione}</div>
+    </div>`;
+  fb.style.display = 'block';
+
+  // next button
+  const btnNext = document.getElementById('btn-next');
+  btnNext.style.display = 'block';
+  btnNext.textContent   = (qIdx + 1 < quiz.length)
+    ? 'Prossima domanda  →'
+    : 'Vedi risultati  →';
+}
+
+function nextQuestion() {
+  qIdx++;
+  if (qIdx >= quiz.length) showResults();
+  else renderQ();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  USCITA ANTICIPATA
+// ═══════════════════════════════════════════════════════════════════════
+function toggleExitConfirm() {
+  const box = document.getElementById('exit-confirm');
+  box.style.display = box.style.display === 'block' ? 'none' : 'block';
+}
+
+function exitQuiz() {
+  // Se la domanda corrente non è stata ancora risposta, non la contiamo
+  // answeredCount = quante domande hanno ricevuto una risposta
+  showResults();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  RISULTATI
+// ═══════════════════════════════════════════════════════════════════════
+function showResults() {
+  show('screen-results');
+
+  // Denominator = domande effettivamente risposte (non necessariamente 15)
+  const total = score + wrong.length;
+  const pct   = total === 0 ? 0 : Math.round((score / total) * 100);
+
+  document.getElementById('res-score').textContent = score;
+  document.getElementById('res-total').textContent = total;
+  document.getElementById('res-ok').textContent    = score;
+  document.getElementById('res-err').textContent   = wrong.length;
+
+  const earlyExit = total < quiz.length;
+  let title, sub;
+  if (total === 0) {
+    title = '🤷 Nessuna risposta';
+    sub   = 'Hai terminato il quiz senza rispondere a nessuna domanda.';
+  } else if (earlyExit) {
+    title = '⏹ Quiz terminato in anticipo';
+    sub   = `Hai risposto a ${total} domanda${total !== 1 ? 'e' : ''} su ${quiz.length} — ${pct}% corrette.`;
+  } else if (pct === 100)    { title = '🏆 Perfetto!';       sub = 'Hai risposto correttamente a tutte le domande!'; }
+  else if (pct >= 80)        { title = '🌟 Ottimo!';          sub = `${pct}% di risposte corrette — quasi perfetto!`; }
+  else if (pct >= 60)        { title = '👍 Buono';            sub = `${pct}% di risposte corrette — puoi migliorare!`; }
+  else if (pct >= 40)        { title = '📚 Da ripassare';     sub = `${pct}% di risposte corrette — ripassa le risposte sbagliate.`; }
+  else                       { title = '💪 Continua così!';   sub = `${pct}% di risposte corrette — ripassa la teoria!`; }
+
+  document.getElementById('res-title').textContent = title;
+  document.getElementById('res-sub').textContent   = sub;
+
+  const btnR = document.getElementById('btn-review');
+  if (wrong.length === 0) {
+    btnR.style.display = 'none';
+  } else {
+    btnR.style.display  = 'block';
+    btnR.textContent = `🔍  Ripassa ${wrong.length} risposta${wrong.length !== 1 ? 'e' : ''} sbagliata${wrong.length !== 1 ? '' : ''}`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  REVIEW
+// ═══════════════════════════════════════════════════════════════════════
+function startReview() {
+  show('screen-review');
+  document.getElementById('review-sub').textContent =
+    `${wrong.length} domanda${wrong.length !== 1 ? 'e' : ''} da ripassare`;
+
+  const list = document.getElementById('review-list');
+  list.innerHTML = '';
+
+  wrong.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'review-item';
+    div.style.animationDelay = `${i * 0.05}s`;
+    div.innerHTML = `
+      <div class="ri-tag">
+        Errore ${i + 1}
+        ${item.q.sezione ? `<span class="ri-section">· ${item.q.sezione}</span>` : ''}
+      </div>
+      <div class="ri-q">${item.q.domanda}</div>
+      <div class="ri-badges">
+        <span class="badge badge-wrong">✗ Hai risposto: ${item.userAns}</span>
+        <span class="badge badge-correct">✓ Corretta: ${item.q.risposta}</span>
+      </div>
+      <div class="ri-exp"><strong>Spiegazione</strong><br>${item.q.spiegazione}</div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  IMPORT MODAL
+// ═══════════════════════════════════════════════════════════════════════
+function openModal() {
+  const msg = document.getElementById('import-msg');
+  msg.style.display = 'none';
+  msg.className = 'import-msg';
+  document.getElementById('import-ta').value = '';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+function importDB() {
+  const raw = document.getElementById('import-ta').value.trim();
+  const msg = document.getElementById('import-msg');
+
+  const showMsg = (text, type) => {
+    msg.textContent  = text;
+    msg.className    = `import-msg ${type}`;
+    msg.style.display = 'block';
+  };
+
+  if (!raw) return showMsg('⚠️ Incolla il JSON prima di caricare.', 'err');
+
+  let parsed;
+  try { parsed = JSON.parse(raw); }
+  catch { return showMsg('❌ JSON non valido — controlla la sintassi.', 'err'); }
+
+  if (!Array.isArray(parsed) || parsed.length === 0)
+    return showMsg('❌ Il JSON deve essere un array non vuoto.', 'err');
+
+  const valid = parsed.every(q => q.domanda && q.risposta && q.spiegazione);
+  if (!valid)
+    return showMsg('❌ Ogni oggetto deve avere: domanda, risposta, spiegazione.', 'err');
+
+  const validRis = parsed.every(q => q.risposta === 'SI' || q.risposta === 'NO');
+  if (!validRis)
+    return showMsg('❌ Il campo "risposta" deve essere esattamente "SI" oppure "NO".', 'err');
+
+  DB = parsed;
+  showMsg(`✅ ${parsed.length} domande caricate con successo!`, 'ok');
+  syncHomeCount();
+  setTimeout(closeModal, 1600);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  STAMPA PDF
+// ═══════════════════════════════════════════════════════════════════════
+function stampaPDF() {
+  // Raggruppa per sezione
+  const sections = {};
+  DB.forEach((q, i) => {
+    const s = q.sezione || 'Senza sezione';
+    if (!sections[s]) sections[s] = [];
+    sections[s].push({ ...q, num: i + 1 });
+  });
+
+  let body = '';
+  for (const [sec, qs] of Object.entries(sections)) {
+    body += `<div class="section-title">${sec}</div>`;
+    qs.forEach(q => {
+      const badge = q.risposta === 'SI'
+        ? '<span class="badge si">✓ SI</span>'
+        : '<span class="badge no">✗ NO</span>';
+      body += `
+        <div class="q-card">
+          <div class="q-header">
+            <span class="q-num">${q.num}.</span>
+            <span class="q-text">${q.domanda} ${badge}</span>
+          </div>
+          <div class="q-explanation">${q.spiegazione}</div>
+        </div>`;
+    });
+  }
+
+  const html = `<!DOCTYPE html>
+<html lang="it"><head><meta charset="UTF-8">
+<title>Sistemi Operativi — Domande SI/NO</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Georgia,serif;font-size:11pt;color:#111;background:#fff}
+.cover{text-align:center;padding:40px 32px 28px;border-bottom:2px solid #111;margin-bottom:28px}
+.cover h1{font-size:22pt;font-weight:bold;margin-bottom:6px}
+.cover p{font-size:11pt;color:#555}
+.section-title{font-size:12pt;font-weight:bold;background:#f0f4ff;border-left:4px solid #2563eb;padding:7px 12px;margin:26px 0 12px;page-break-after:avoid}
+.q-card{border:1px solid #ddd;border-radius:5px;padding:12px 14px;margin-bottom:11px;page-break-inside:avoid}
+.q-header{display:flex;align-items:flex-start;gap:8px;margin-bottom:7px}
+.q-num{font-size:9pt;color:#888;min-width:26px;padding-top:2px;font-family:sans-serif}
+.q-text{font-size:11pt;flex:1;line-height:1.5}
+.badge{display:inline-block;font-family:sans-serif;font-size:9pt;font-weight:bold;padding:2px 8px;border-radius:4px;margin-left:7px;white-space:nowrap}
+.si{background:#dcfce7;color:#15803d;border:1px solid #86efac}
+.no{background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5}
+.q-explanation{font-size:9.5pt;color:#444;line-height:1.5;border-top:1px dashed #ccc;margin-top:7px;padding-top:7px;font-style:italic}
+.footer{text-align:center;margin-top:36px;font-size:9pt;color:#999;font-family:sans-serif}
+@media print{@page{margin:1.8cm 1.5cm}body{font-size:10pt}.section-title{margin:18px 0 9px}}
+</style></head><body>
+<div class="cover">
+  <h1>Sistemi Operativi — Domande SI/NO</h1>
+  <p>${DB.length} domande &nbsp;·&nbsp; database completo con risposte e spiegazioni</p>
+</div>
+${body}
+<div class="footer">Quiz Sistemi Operativi &mdash; ${DB.length} domande totali</div>
+<script>window.onload=function(){window.print()}<\/script>
+</body></html>`;
+
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+}
+
+// init
+syncHomeCount();
+</script>
+</body>
+</html>
